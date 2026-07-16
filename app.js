@@ -272,7 +272,7 @@ function canvasDataUrl(quality = 0.76) {
 }
 
 
-const DRAFT_KEY = 'reformHubDraftV16';
+const DRAFT_KEY = 'reformHubDraftV17';
 function saveDraft() {
   const draft = { propertyName: projectName.value, staff: staffName.value, note: projectNote.value, visitDate: visitDate.value, visitTitle: visitTitle.value, savedAt: Date.now() };
   try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (_) {}
@@ -358,27 +358,39 @@ async function renderProjects() {
     });
     propertyCount.textContent = groups.size;
     const folders = [...groups.values()].sort((a,b) => {
-      const ad = a.visits[0]?.updatedAt || '';
-      const bd = b.visits[0]?.updatedAt || '';
-      return String(bd).localeCompare(String(ad));
+      const ad = Math.max(...a.visits.map(v => new Date(v.visitDate || v.updatedAt || 0).getTime()));
+      const bd = Math.max(...b.visits.map(v => new Date(v.visitDate || v.updatedAt || 0).getTime()));
+      return bd - ad;
     });
     projectList.innerHTML = folders.map((folder) => {
       const visits = folder.visits.sort((a,b) => String(b.visitDate || b.updatedAt || '').localeCompare(String(a.visitDate || a.updatedAt || '')));
+      const latest = visits[0];
+      const past = visits.slice(1);
       const encodedProperty = encodeURIComponent(folder.property);
       const searchable = [folder.property, ...visits.flatMap(v => [v.visitTitle, v.staff, v.note])].join(' ').toLocaleLowerCase('ja-JP');
-      return `<section class="property-folder" data-search="${escapeHtml(searchable)}">
+      const latestDate = latest.visitDate ? new Date(`${latest.visitDate}T00:00:00`).toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'}) : new Date(latest.updatedAt || latest.createdAt).toLocaleDateString('ja-JP');
+      const latestNote = latest.note?.trim() || '打ち合わせ内容はまだ入力されていません。';
+      return `<section class="property-folder latest-layout" data-search="${escapeHtml(searchable)}">
         <div class="property-folder-header">
           <div class="property-folder-title"><span class="folder-icon">📁</span><div><strong>${escapeHtml(folder.property)}</strong><small>打ち合わせ記録 ${visits.length}件</small></div></div>
           <button class="add-visit-btn" data-add-visit="${encodedProperty}" data-count="${visits.length}" type="button">＋ この物件に記録を追加</button>
         </div>
-        <div class="visit-list">${visits.map((project,index) => {
+        <article class="latest-status-card">
+          <div class="latest-status-top"><div><span class="latest-label">📍 最新状況</span><h3>${escapeHtml(latest.visitTitle || '現場打ち合わせ')}</h3><p class="latest-date">${escapeHtml(latestDate)}　${latest.staff ? `担当：${escapeHtml(latest.staff)}` : ''}</p></div><span class="latest-badge">最新</span></div>
+          <div class="latest-status-body">
+            ${latest.image ? `<img class="latest-image" src="${latest.image}" alt="${escapeHtml(latest.visitTitle || folder.property)}" />` : ''}
+            <div class="latest-note">${escapeHtml(latestNote).replace(/\n/g,'<br>')}</div>
+          </div>
+          <div class="latest-actions"><button class="open-latest" data-load="${latest.id}" type="button">大きく開く・編集する</button><button data-delete="${latest.id}" type="button">削除</button></div>
+        </article>
+        ${past.length ? `<details class="past-history"><summary>過去の打ち合わせ ${past.length}件を見る</summary><div class="visit-list">${past.map((project,index) => {
           const dateText = project.visitDate ? new Date(`${project.visitDate}T00:00:00`).toLocaleDateString('ja-JP') : new Date(project.updatedAt || project.createdAt).toLocaleDateString('ja-JP');
-          return `<article class="visit-item">
+          return `<article class="visit-item compact-visit">
             ${project.image ? `<img src="${project.image}" alt="${escapeHtml(project.visitTitle || folder.property)}" />` : '<div class="property-empty-photo">📝</div>'}
-            <div><span class="visit-date">${escapeHtml(dateText)}</span><span class="record-type-badge">${project.image ? '写真あり' : 'メモのみ'}</span><strong>${escapeHtml(project.visitTitle || `第${visits.length-index}回 打ち合わせ`)}</strong><small>${escapeHtml(project.staff || '担当者未入力')}</small><span class="project-note-preview">${escapeHtml(project.note || 'メモなし')}</span></div>
+            <div><span class="visit-date">${escapeHtml(dateText)}</span><strong>${escapeHtml(project.visitTitle || `過去の打ち合わせ`)}</strong><span class="project-note-preview">${escapeHtml(project.note || 'メモなし')}</span></div>
             <div class="visit-actions"><button data-load="${project.id}" type="button">開く</button><button data-delete="${project.id}" type="button">削除</button></div>
           </article>`;
-        }).join('')}</div>
+        }).join('')}</div></details>` : '<p class="no-past-history">過去の記録はまだありません</p>'}
       </section>`;
     }).join('');
   } catch (error) {

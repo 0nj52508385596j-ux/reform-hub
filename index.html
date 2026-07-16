@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#17211b" />
   <meta name="description" content="写真を撮る、描く、見せる。誰でも迷わず使えるリフォーム提案ツール" />
-  <title>Reform Hub｜かんたん現場記録</title>
+  <title>Reform Hub｜最新状況がすぐ分かる</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -20,8 +20,7 @@
 
   <main class="container simple-container">
     <section class="start-card" aria-label="はじめる">
-      <p class="start-kicker">現場でやることは、2つだけ</p>
-      <div class="today-strip"><strong id="todayLabel"></strong><span>写真がなくてもメモだけ保存できます</span></div>
+      <p class="start-kicker">まず、ここを押してください</p>
       <label class="mega-photo-button">
         <input id="imageInput" type="file" accept="image/*" capture="environment" />
         <span class="mega-icon">📷</span>
@@ -29,8 +28,7 @@
         <small>現場ではここから開始</small>
       </label>
       <div class="quick-actions">
-        <button id="quickMemoBtn" class="quick-primary" type="button">🎤 メモだけ残す</button>
-        <button id="showProjectsBtn" type="button">📁 物件ファイルを見る</button>
+        <button id="showProjectsBtn" type="button">📁 保存した案件</button>
         <button id="helpBtn" type="button">？ 使い方</button>
       </div>
     </section>
@@ -60,7 +58,7 @@
     <section class="card action-card" aria-labelledby="actionHeading">
       <div class="section-title-row"><div><p class="step-label">STEP 2</p><h2 id="actionHeading">打ち合わせを保存・共有</h2></div></div>
       <div class="action-grid simple-action-grid">
-        <button id="saveProjectBtn" class="primary" type="button">💾 この記録を保存</button>
+        <button id="saveProjectBtn" class="primary" type="button" disabled>💾 この記録を保存</button>
         <button id="shareBtn" type="button" disabled>📤 送る・共有</button>
         <button id="downloadBtn" type="button" disabled>⬇️ 画像保存</button>
         <button id="aiBtn" class="ai" type="button" disabled>✨ AI提案（準備中）</button>
@@ -80,22 +78,21 @@
           <label><span>打ち合わせ日</span><input id="visitDate" type="date" /></label>
           <label><span>記録名</span><div class="voice-field"><input id="visitTitle" lang="ja" type="text" placeholder="例：第1回 現場打ち合わせ" maxlength="50" /><button class="voice-btn" type="button" data-target="visitTitle">🎤 話して入力</button></div></label>
         </div>
-        <label class="full-field"><span>今回の打ち合わせメモ</span><div class="voice-field voice-note"><textarea id="projectNote" lang="ja" rows="3" placeholder="例：目隠しフェンス、高さ1.8mを希望" maxlength="300"></textarea><button class="voice-btn voice-btn-large" type="button" data-target="projectNote">🎤 話して入力</button></div><small class="voice-hint">ボタンを押して、そのまま話してください。</small></label>
+        <label class="full-field meeting-focus-field"><span class="meeting-focus-title">今回の打ち合わせ内容</span><p class="meeting-focus-help">決まったこと・次にすること・確認事項を、話すか大きな欄へ入力してください。</p><div class="voice-field voice-note"><textarea id="projectNote" lang="ja" rows="8" placeholder="例：
+【決定】目隠しフェンスは高さ1.8m、木目ブラウン
+【次回】修正見積を提出
+【確認】隣地境界の位置" maxlength="800"></textarea><button class="voice-btn voice-btn-large" type="button" data-target="projectNote">🎤 話して入力</button></div><small class="voice-hint">長く話しても大丈夫です。保存後は「最新状況」として大きく表示されます。</small></label>
       </div>
     </details>
 
     <section class="card saved-card" id="projectsSection" aria-labelledby="savedHeading">
       <div class="section-title-row top-row"><div><p class="step-label">PROPERTY FILES</p><h2 id="savedHeading">物件ファイル</h2></div><button id="deleteAllBtn" class="danger-text" type="button">全件削除</button></div>
-      <div class="project-tools">
-        <label class="search-box"><span>🔎</span><input id="projectSearch" type="search" placeholder="物件名・メモから探す" /></label>
-        <div class="project-summary"><strong id="propertyCount">0</strong>物件・<strong id="recordCount">0</strong>記録</div>
-      </div>
       <div id="projectList" class="project-list"></div>
     </section>
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div><div id="voiceStatus" class="voice-status hidden" role="status" aria-live="assertive"><span class="voice-pulse">🎤</span><strong>聞いています…</strong><button id="stopVoiceBtn" type="button">停止</button></div>
-  <dialog id="helpDialog"><form method="dialog" class="dialog-content"><h2>使い方は本当に簡単です</h2><div class="help-steps"><p><b>1</b> 写真を撮る、またはメモだけ残す</p><p><b>2</b> 必要なら写真に描く</p><p><b>3</b> 「この記録を保存」を押す</p></div><button class="primary">分かりました</button></form></dialog>
+  <dialog id="helpDialog"><form method="dialog" class="dialog-content"><h2>使い方は3つだけ</h2><div class="help-steps"><p><b>1</b> 写真を撮る</p><p><b>2</b> 指やペンで描く</p><p><b>3</b> 保存・共有する</p></div><button class="primary">分かりました</button></form></dialog>
   <dialog id="aiDialog"><form method="dialog" class="dialog-content"><div class="ai-badge">NEXT FEATURE</div><h2>AI提案イメージ</h2><p>写真と手描き指示から完成イメージを作る機能を準備中です。</p><label><span>AIへの指示</span><textarea id="aiPrompt" rows="4" placeholder="例：木目調の目隠しフェンスを設置"></textarea></label><div class="dialog-actions"><button id="savePromptBtn" class="primary" value="cancel" type="button">指示文を保存</button><button value="close">閉じる</button></div></form></dialog>
   <script src="app.js"></script>
 </body>

@@ -1,14 +1,9 @@
-{
-  "name": "Reform Hub",
-  "short_name": "Reform Hub",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#f2f4f0",
-  "theme_color": "#17211b",
-  "description": "現場写真に描き込み、案件として保存・共有できるリフォーム提案ツール",
-  "icons": [
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
-  ]
-}
+# Reform Hub v1.7 最新状況版
+
+物件を開いた瞬間に、最新の打ち合わせ内容を大きく読める版です。
+
+- 「今回の打ち合わせ内容」入力欄を大型化
+- 最新記録を物件の先頭に大きく表示
+- 過去履歴は折りたたんで整理
+- iPad・PC・スマホ対応
+- 音声入力、物件別保存、IndexedDB保存を継続

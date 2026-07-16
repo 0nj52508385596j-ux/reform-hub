@@ -111,3 +111,33 @@ dialog::backdrop { background:rgba(17,24,20,.58); backdrop-filter:blur(2px); }
 /* v1.6 現場定着ブラッシュアップ */
 .today-strip{display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 16px;color:#526057}.today-strip strong{background:#eef2ed;color:#17211b;border-radius:999px;padding:7px 12px}.today-strip span{font-weight:700}.quick-actions{grid-template-columns:1.2fr 1fr 1fr}.quick-primary{background:#ff5a1f!important;color:#fff!important}.project-tools{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:4px 0 16px;flex-wrap:wrap}.search-box{display:flex;align-items:center;gap:8px;flex:1;min-width:260px;background:#f3f5f2;border:1px solid #d8ddd7;border-radius:14px;padding:0 13px}.search-box input{border:0;background:transparent;width:100%;min-height:52px;font-size:17px;outline:none}.project-summary{white-space:nowrap;color:#526057;font-weight:800;background:#eef2ed;border-radius:999px;padding:9px 13px}.project-summary strong{color:#17211b;font-size:19px;margin-right:2px}.draft-note{font-size:12px;color:#5d695f;margin-top:8px}.property-folder[hidden]{display:none}.no-search-result{padding:26px;text-align:center;border:2px dashed #d8ddd7;border-radius:18px;color:#667067;background:#fafbf9}.record-type-badge{display:inline-block;font-size:11px;font-weight:900;border-radius:999px;padding:3px 8px;background:#eef2ed;color:#435047;margin-left:6px}
 @media(max-width:700px){.quick-actions{grid-template-columns:1fr}.today-strip{align-items:stretch;flex-direction:column}.today-strip strong,.today-strip span{text-align:center}.project-tools{align-items:stretch}.search-box{min-width:100%}.project-summary{text-align:center}.simple-action-grid .primary{min-height:68px}}
+
+
+/* v1.7 最新状況を3秒で読む */
+.meeting-focus-field{margin-top:22px;padding:18px;border:3px solid #17211b;border-radius:20px;background:#fffdf8}
+.meeting-focus-title{font-size:24px!important;line-height:1.25;margin-bottom:6px!important}
+.meeting-focus-help{margin:0 0 12px;color:#59635b;font-size:15px;font-weight:700;line-height:1.55}
+.meeting-focus-field textarea{min-height:220px;font-size:21px;line-height:1.7;padding:18px;border-width:2px;background:#fff}
+.meeting-focus-field .voice-btn-large{min-width:170px;font-size:18px;min-height:64px}
+.latest-layout{background:#fff}
+.latest-status-card{margin:16px;border:3px solid #17211b;border-radius:20px;overflow:hidden;background:#fff;box-shadow:0 10px 24px rgba(23,33,27,.08)}
+.latest-status-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px 20px;background:#17211b;color:#fff}
+.latest-label{display:block;font-size:16px;font-weight:950;color:#ffd9ca;margin-bottom:7px}
+.latest-status-top h3{margin:0;font-size:26px;line-height:1.3}
+.latest-date{margin:8px 0 0;color:#d9e0da;font-size:14px;font-weight:700}
+.latest-badge{background:#ef5b2a;color:#fff;font-weight:950;border-radius:999px;padding:7px 12px;white-space:nowrap}
+.latest-status-body{display:grid;grid-template-columns:minmax(0,230px) 1fr;gap:20px;padding:20px;align-items:start}
+.latest-status-body:has(.latest-note:only-child){grid-template-columns:1fr}
+.latest-image{width:100%;max-height:220px;object-fit:cover;border-radius:14px;background:#eef1ed}
+.latest-note{font-size:23px;line-height:1.75;font-weight:750;white-space:normal;overflow-wrap:anywhere;color:#17211b;background:#f7f9f6;border-radius:16px;padding:20px;min-height:150px}
+.latest-actions{display:flex;gap:10px;padding:0 20px 20px}
+.latest-actions .open-latest{flex:1;background:#ef5b2a;color:#fff;font-size:18px;min-height:55px}
+.latest-actions button:last-child{background:#f2e8e6;color:#a3312c}
+.past-history{margin:0 16px 16px;border:1px solid #d9dfd8;border-radius:15px;overflow:hidden}
+.past-history summary{cursor:pointer;padding:15px 17px;background:#f0f3ef;font-weight:900;font-size:16px}
+.no-past-history{margin:0 18px 18px;color:#737c74;font-size:13px}
+.compact-visit .project-note-preview{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+@media(max-width:700px){
+ .meeting-focus-field{padding:14px}.meeting-focus-title{font-size:22px!important}.meeting-focus-field textarea{font-size:19px;min-height:230px}.meeting-focus-field .voice-field{display:grid}.meeting-focus-field .voice-btn-large{width:100%}
+ .latest-status-card{margin:12px}.latest-status-top{padding:16px}.latest-status-top h3{font-size:23px}.latest-status-body{grid-template-columns:1fr;padding:14px;gap:12px}.latest-image{max-height:190px}.latest-note{font-size:20px;line-height:1.7;padding:17px;min-height:130px}.latest-actions{padding:0 14px 14px;flex-direction:column}.latest-actions button{width:100%}
+}
