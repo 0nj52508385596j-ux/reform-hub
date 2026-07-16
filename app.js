@@ -19,6 +19,14 @@ const clearDrawingBtn = $('clearDrawingBtn');
 const saveProjectBtn = $('saveProjectBtn');
 const downloadBtn = $('downloadBtn');
 const shareBtn = $('shareBtn');
+const shareDialog = $('shareDialog');
+const nativeShareBtn = $('nativeShareBtn');
+const lineShareBtn = $('lineShareBtn');
+const emailShareBtn = $('emailShareBtn');
+const smsShareBtn = $('smsShareBtn');
+const teamsShareBtn = $('teamsShareBtn');
+const teamsEmail = $('teamsEmail');
+const lastShareStatus = $('lastShareStatus');
 const aiBtn = $('aiBtn');
 const aiDialog = $('aiDialog');
 const aiPrompt = $('aiPrompt');
@@ -115,9 +123,10 @@ function markSaved() {
 }
 
 function setEnabled(enabled) {
-  [drawToggleBtn, clearDrawingBtn, downloadBtn, shareBtn, aiBtn].forEach((button) => {
+  [drawToggleBtn, clearDrawingBtn, downloadBtn, aiBtn].forEach((button) => {
     button.disabled = !enabled;
   });
+  shareBtn.disabled = false;
   saveProjectBtn.disabled = false;
   undoBtn.disabled = !enabled || history.length < 2;
 }
@@ -530,25 +539,103 @@ downloadBtn.addEventListener('click', () => {
   link.remove();
 });
 
-shareBtn.addEventListener('click', async () => {
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-  if (!blob) return;
-  const file = new File([blob], fileName(), { type:'image/jpeg' });
-  try {
-    if (navigator.canShare?.({ files:[file] })) {
-      await navigator.share({
-        title: projectName.value || 'Reform Hub',
-        text: projectNote.value || 'Reform Hubで作成した現場提案イメージです。',
-        files:[file]
-      });
-    } else if (navigator.share) {
-      await navigator.share({ title: projectName.value || 'Reform Hub', text: projectNote.value || 'Reform Hubで作成した提案です。' });
-    } else {
-      showToast('この端末では共有できません。「画像を保存」をご利用ください');
-    }
-  } catch (error) {
-    if (error?.name !== 'AbortError') showToast('共有できませんでした。画像保存をご利用ください');
+function formattedVisitDate() {
+  if (!visitDate.value) return new Date().toLocaleDateString('ja-JP');
+  return new Date(`${visitDate.value}T00:00:00`).toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+}
+
+function shareMessage(short = false) {
+  const property = projectName.value.trim() || '現場記録';
+  const title = visitTitle.value.trim() || '現場打ち合わせ';
+  const note = projectNote.value.trim() || '本日の打ち合わせ内容をご確認ください。';
+  const staff = staffName.value.trim();
+  if (short) {
+    return `【${property}】${formattedVisitDate()}の打ち合わせ内容です。\n${note}\nご確認をお願いいたします。`;
   }
+  return [
+    `${property} ご担当者様`,
+    '',
+    `本日（${formattedVisitDate()}）の「${title}」の内容をお送りします。`,
+    '',
+    note,
+    '',
+    'ご確認をお願いいたします。',
+    staff ? `CAINZ365　${staff}` : 'CAINZ365',
+    '',
+    'Reform Hubから送信'
+  ].join('\n');
+}
+
+function shareSubject() {
+  return `【CAINZ365】${projectName.value.trim() || '現場'} ${visitTitle.value.trim() || '打ち合わせ内容'}`;
+}
+
+function hasCanvasImage() {
+  return Boolean(baseImageData) && !emptyState.classList.contains('hidden');
+}
+
+async function canvasShareFile() {
+  if (!hasCanvasImage()) return null;
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+  return blob ? new File([blob], fileName(), { type:'image/jpeg' }) : null;
+}
+
+function markShared(channel) {
+  const stamp = new Date().toLocaleString('ja-JP', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  const text = `✅ ${stamp}　${channel}を開きました`;
+  localStorage.setItem('reformHubLastShare', text);
+  lastShareStatus.textContent = text;
+}
+
+shareBtn.addEventListener('click', () => {
+  teamsEmail.value = localStorage.getItem('reformHubTeamsEmail') || '';
+  lastShareStatus.textContent = localStorage.getItem('reformHubLastShare') || 'まだ送信記録はありません';
+  shareDialog.showModal();
+});
+
+nativeShareBtn.addEventListener('click', async () => {
+  try {
+    const file = await canvasShareFile();
+    const data = { title: shareSubject(), text: shareMessage(false) };
+    if (file && navigator.canShare?.({ files:[file] })) data.files = [file];
+    if (!navigator.share) {
+      showToast('この端末では共有メニューを開けません');
+      return;
+    }
+    await navigator.share(data);
+    markShared('共有メニュー');
+    shareDialog.close();
+  } catch (error) {
+    if (error?.name !== 'AbortError') showToast('共有メニューを開けませんでした');
+  }
+});
+
+lineShareBtn.addEventListener('click', () => {
+  markShared('LINE');
+  window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareMessage(false))}`, '_blank', 'noopener');
+});
+
+emailShareBtn.addEventListener('click', () => {
+  markShared('メール');
+  window.location.href = `mailto:?subject=${encodeURIComponent(shareSubject())}&body=${encodeURIComponent(shareMessage(false))}`;
+});
+
+smsShareBtn.addEventListener('click', () => {
+  markShared('ショートメール');
+  window.location.href = `sms:&body=${encodeURIComponent(shareMessage(true))}`;
+});
+
+teamsShareBtn.addEventListener('click', () => {
+  const email = teamsEmail.value.trim();
+  if (!email || !email.includes('@')) {
+    teamsEmail.focus();
+    showToast('自分の会社メールアドレスを入力してください');
+    return;
+  }
+  localStorage.setItem('reformHubTeamsEmail', email);
+  markShared('自分のTeams');
+  const url = `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(email)}&message=${encodeURIComponent(shareMessage(false))}`;
+  window.open(url, '_blank', 'noopener');
 });
 
 aiBtn.addEventListener('click', () => aiDialog.showModal());

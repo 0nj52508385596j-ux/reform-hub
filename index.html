@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#17211b" />
   <meta name="description" content="写真を撮る、描く、見せる。誰でも迷わず使えるリフォーム提案ツール" />
-  <title>Reform Hub｜現在と過去がすぐ分かる</title>
+  <title>Reform Hub｜お客様とTeamsへかんたん共有</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -59,7 +59,7 @@
       <div class="section-title-row"><div><p class="step-label">STEP 2</p><h2 id="actionHeading">打ち合わせを保存・共有</h2></div></div>
       <div class="action-grid simple-action-grid">
         <button id="saveProjectBtn" class="primary" type="button" disabled>💾 この記録を保存</button>
-        <button id="shareBtn" type="button" disabled>📤 送る・共有</button>
+        <button id="shareBtn" class="share-main" type="button">📤 お客様・自分へ送る</button>
         <button id="downloadBtn" type="button" disabled>⬇️ 画像保存</button>
         <button id="aiBtn" class="ai" type="button" disabled>✨ AI提案（準備中）</button>
       </div>
@@ -94,6 +94,31 @@
   </main>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div><div id="voiceStatus" class="voice-status hidden" role="status" aria-live="assertive"><span class="voice-pulse">🎤</span><strong>聞いています…</strong><button id="stopVoiceBtn" type="button">停止</button></div>
+
+  <dialog id="shareDialog" class="share-dialog">
+    <form method="dialog" class="dialog-content share-dialog-content">
+      <div class="share-heading">
+        <div><span class="share-kicker">送る相手を選ぶ</span><h2>📤 お客様・自分へ送る</h2></div>
+        <button class="dialog-close" value="close" aria-label="閉じる">×</button>
+      </div>
+      <button id="nativeShareBtn" class="share-choice recommended" type="button">
+        <span class="share-choice-icon">📱</span><span><strong>画像つきで送る</strong><small>LINE・メール・SMS・Teamsを選べます</small></span><b>おすすめ</b>
+      </button>
+      <div class="share-choice-grid">
+        <button id="lineShareBtn" class="share-choice line" type="button"><span class="share-choice-icon">🟢</span><span><strong>LINE</strong><small>文章をLINEで開く</small></span></button>
+        <button id="emailShareBtn" class="share-choice" type="button"><span class="share-choice-icon">✉️</span><span><strong>メール</strong><small>件名と本文を作成</small></span></button>
+        <button id="smsShareBtn" class="share-choice" type="button"><span class="share-choice-icon">💬</span><span><strong>ショートメール</strong><small>短い文章を作成</small></span></button>
+      </div>
+      <section class="teams-box">
+        <div class="teams-box-title"><span>🟣</span><div><strong>自分のTeamsチャットへ残す</strong><small>現場記録を自分宛てにすぐ送る</small></div></div>
+        <label><span>自分の会社メールアドレス（最初の1回だけ）</span><input id="teamsEmail" type="email" inputmode="email" autocomplete="email" placeholder="例：name@company.co.jp" /></label>
+        <button id="teamsShareBtn" class="teams-share-btn" type="button">🟣 自分のTeamsへ送る</button>
+        <p class="share-note">Teamsが開き、文章が入力された状態になります。画像も送る場合は、上の「画像つきで送る」からTeamsを選んでください。</p>
+      </section>
+      <div id="lastShareStatus" class="last-share-status">まだ送信記録はありません</div>
+    </form>
+  </dialog>
+
   <dialog id="helpDialog"><form method="dialog" class="dialog-content"><h2>使い方は3つだけ</h2><div class="help-steps"><p><b>1</b> 写真を撮る</p><p><b>2</b> 指やペンで描く</p><p><b>3</b> 保存・共有する</p></div><button class="primary">分かりました</button></form></dialog>
   <dialog id="aiDialog"><form method="dialog" class="dialog-content"><div class="ai-badge">NEXT FEATURE</div><h2>AI提案イメージ</h2><p>写真と手描き指示から完成イメージを作る機能を準備中です。</p><label><span>AIへの指示</span><textarea id="aiPrompt" rows="4" placeholder="例：木目調の目隠しフェンスを設置"></textarea></label><div class="dialog-actions"><button id="savePromptBtn" class="primary" value="cancel" type="button">指示文を保存</button><button value="close">閉じる</button></div></form></dialog>
   <script src="app.js"></script>
