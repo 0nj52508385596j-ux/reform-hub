@@ -8,6 +8,8 @@ const emptyState = $('emptyState');
 const projectName = $('projectName');
 const staffName = $('staffName');
 const projectNote = $('projectNote');
+const visitDate = $('visitDate');
+const visitTitle = $('visitTitle');
 const penColor = $('penColor');
 const penWidth = $('penWidth');
 const penWidthValue = $('penWidthValue');
@@ -27,6 +29,11 @@ const newProjectBtn = $('newProjectBtn');
 const deleteAllBtn = $('deleteAllBtn');
 const toast = $('toast');
 const installBtn = $('installBtn');
+const projectSearch = $('projectSearch');
+const propertyCount = $('propertyCount');
+const recordCount = $('recordCount');
+const quickMemoBtn = $('quickMemoBtn');
+const todayLabel = $('todayLabel');
 
 let baseImageData = null;
 let activeProjectId = null;
@@ -54,9 +61,10 @@ function markSaved() {
 }
 
 function setEnabled(enabled) {
-  [drawToggleBtn, clearDrawingBtn, saveProjectBtn, downloadBtn, shareBtn, aiBtn].forEach((button) => {
+  [drawToggleBtn, clearDrawingBtn, downloadBtn, shareBtn, aiBtn].forEach((button) => {
     button.disabled = !enabled;
   });
+  saveProjectBtn.disabled = false;
   undoBtn.disabled = !enabled || history.length < 2;
 }
 
@@ -156,7 +164,12 @@ canvas.addEventListener('pointerleave', (event) => {
 
 imageInput.addEventListener('change', (event) => loadImageFile(event.target.files?.[0]));
 penWidth.addEventListener('input', () => { penWidthValue.textContent = penWidth.value; });
-[projectName, staffName, projectNote, aiPrompt].forEach((field) => field.addEventListener('input', markDirty));
+[projectName, staffName, projectNote, visitDate, visitTitle, aiPrompt].forEach((field) => field.addEventListener('input', () => { markDirty(); saveDraft(); }));
+
+function todayValue(){ const d=new Date(); const local=new Date(d.getTime()-d.getTimezoneOffset()*60000); return local.toISOString().slice(0,10); }
+visitDate.value = todayValue();
+if (todayLabel) todayLabel.textContent = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+staffName.value = localStorage.getItem('reformHubLastStaff') || '';
 
 drawToggleBtn.addEventListener('click', () => {
   drawingEnabled = !drawingEnabled;
@@ -258,19 +271,43 @@ function canvasDataUrl(quality = 0.76) {
   return canvas.toDataURL('image/jpeg', quality);
 }
 
+
+const DRAFT_KEY = 'reformHubDraftV16';
+function saveDraft() {
+  const draft = { propertyName: projectName.value, staff: staffName.value, note: projectNote.value, visitDate: visitDate.value, visitTitle: visitTitle.value, savedAt: Date.now() };
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (_) {}
+}
+function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (_) {} }
+function restoreDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+    if (!draft || Date.now() - Number(draft.savedAt || 0) > 7 * 86400000) return;
+    if (!projectName.value) projectName.value = draft.propertyName || '';
+    if (!projectNote.value) projectNote.value = draft.note || '';
+    if (!visitTitle.value) visitTitle.value = draft.visitTitle || '';
+    if (draft.visitDate) visitDate.value = draft.visitDate;
+    if (!staffName.value) staffName.value = draft.staff || '';
+    if (draft.propertyName || draft.note) showToast('前回の入力途中を復元しました');
+  } catch (_) {}
+}
+
 async function saveProject() {
-  if (!baseImageData) return;
+  const hasText = projectName.value.trim() || projectNote.value.trim() || visitTitle.value.trim();
+  if (!baseImageData && !hasText) { showToast('物件名かメモを入力してください'); document.querySelector('.details-card')?.setAttribute('open',''); projectName.focus(); return; }
   saveProjectBtn.disabled = true;
   saveProjectBtn.textContent = '保存中…';
   const now = new Date().toISOString();
   const item = {
     id: activeProjectId || safeId(),
-    name: projectName.value.trim() || `無題の案件 ${new Date().toLocaleDateString('ja-JP')}`,
+    name: projectName.value.trim() || `無題の物件 ${new Date().toLocaleDateString('ja-JP')}`,
+    propertyName: projectName.value.trim() || `無題の物件 ${new Date().toLocaleDateString('ja-JP')}`,
+    visitDate: visitDate.value || todayValue(),
+    visitTitle: visitTitle.value.trim() || '現場打ち合わせ',
     staff: staffName.value.trim(),
     note: projectNote.value.trim(),
     aiPrompt: aiPrompt.value.trim(),
     baseImage: baseImageData,
-    image: canvasDataUrl(0.76),
+    image: baseImageData ? canvasDataUrl(0.76) : null,
     createdAt: now,
     updatedAt: now
   };
@@ -282,16 +319,18 @@ async function saveProject() {
       if (existing?.createdAt) item.createdAt = existing.createdAt;
     }
     await putProject(item);
+    if (item.staff) localStorage.setItem('reformHubLastStaff', item.staff);
+    clearDraft();
     activeProjectId = item.id;
     markSaved();
     await renderProjects();
-    showToast('案件を保存しました');
+    showToast('物件ファイルに記録を保存しました');
   } catch (error) {
     console.error(error);
     showToast('保存できませんでした。Safariのプライベートブラウズを解除して再度お試しください');
   } finally {
-    saveProjectBtn.textContent = '💾 案件を保存';
-    saveProjectBtn.disabled = !baseImageData;
+    saveProjectBtn.textContent = '💾 この記録を保存';
+    saveProjectBtn.disabled = false;
   }
 }
 
@@ -304,26 +343,47 @@ function escapeHtml(value) {
 async function renderProjects() {
   try {
     const projects = await getProjects();
+    recordCount.textContent = projects.length;
     if (!projects.length) {
-      projectList.innerHTML = '<p class="hint">まだ保存した案件はありません。写真を入れて「案件を保存」を押してください。</p>';
+      propertyCount.textContent = '0';
+      projectList.innerHTML = '<p class="hint">まだ物件ファイルはありません。写真がなくても、メモだけ保存できます。</p>';
       return;
     }
-    projectList.innerHTML = projects.map((project) => `
-      <article class="project-item">
-        <img src="${project.image}" alt="${escapeHtml(project.name)}" />
-        <div>
-          <strong>${escapeHtml(project.name)}</strong>
-          <small>${escapeHtml(project.staff || '担当者未入力')}・${new Date(project.updatedAt || project.createdAt).toLocaleString('ja-JP')}</small>
-          <span class="project-note-preview">${escapeHtml(project.note || 'メモなし')}</span>
+    const groups = new Map();
+    projects.forEach((project) => {
+      const property = (project.propertyName || project.name || '無題の物件').trim();
+      const key = property.toLocaleLowerCase('ja-JP');
+      if (!groups.has(key)) groups.set(key, { property, visits: [] });
+      groups.get(key).visits.push(project);
+    });
+    propertyCount.textContent = groups.size;
+    const folders = [...groups.values()].sort((a,b) => {
+      const ad = a.visits[0]?.updatedAt || '';
+      const bd = b.visits[0]?.updatedAt || '';
+      return String(bd).localeCompare(String(ad));
+    });
+    projectList.innerHTML = folders.map((folder) => {
+      const visits = folder.visits.sort((a,b) => String(b.visitDate || b.updatedAt || '').localeCompare(String(a.visitDate || a.updatedAt || '')));
+      const encodedProperty = encodeURIComponent(folder.property);
+      const searchable = [folder.property, ...visits.flatMap(v => [v.visitTitle, v.staff, v.note])].join(' ').toLocaleLowerCase('ja-JP');
+      return `<section class="property-folder" data-search="${escapeHtml(searchable)}">
+        <div class="property-folder-header">
+          <div class="property-folder-title"><span class="folder-icon">📁</span><div><strong>${escapeHtml(folder.property)}</strong><small>打ち合わせ記録 ${visits.length}件</small></div></div>
+          <button class="add-visit-btn" data-add-visit="${encodedProperty}" data-count="${visits.length}" type="button">＋ この物件に記録を追加</button>
         </div>
-        <div class="project-item-actions">
-          <button data-load="${project.id}" type="button">開く</button>
-          <button data-delete="${project.id}" type="button">削除</button>
-        </div>
-      </article>`).join('');
+        <div class="visit-list">${visits.map((project,index) => {
+          const dateText = project.visitDate ? new Date(`${project.visitDate}T00:00:00`).toLocaleDateString('ja-JP') : new Date(project.updatedAt || project.createdAt).toLocaleDateString('ja-JP');
+          return `<article class="visit-item">
+            ${project.image ? `<img src="${project.image}" alt="${escapeHtml(project.visitTitle || folder.property)}" />` : '<div class="property-empty-photo">📝</div>'}
+            <div><span class="visit-date">${escapeHtml(dateText)}</span><span class="record-type-badge">${project.image ? '写真あり' : 'メモのみ'}</span><strong>${escapeHtml(project.visitTitle || `第${visits.length-index}回 打ち合わせ`)}</strong><small>${escapeHtml(project.staff || '担当者未入力')}</small><span class="project-note-preview">${escapeHtml(project.note || 'メモなし')}</span></div>
+            <div class="visit-actions"><button data-load="${project.id}" type="button">開く</button><button data-delete="${project.id}" type="button">削除</button></div>
+          </article>`;
+        }).join('')}</div>
+      </section>`;
+    }).join('');
   } catch (error) {
     console.error(error);
-    projectList.innerHTML = '<p class="hint">保存案件を読み込めませんでした。Safariのプライベートブラウズでは通常モードで開いてください。</p>';
+    projectList.innerHTML = '<p class="hint">物件ファイルを読み込めませんでした。Safariの通常モードで開いてください。</p>';
   }
 }
 
@@ -332,24 +392,49 @@ projectList.addEventListener('click', async (event) => {
   if (!target) return;
   const loadId = target.dataset.load;
   const deleteId = target.dataset.delete;
+  const addVisitProperty = target.dataset.addVisit;
+
+  if (addVisitProperty) {
+    const property = decodeURIComponent(addVisitProperty);
+    const count = Number(target.dataset.count || 0);
+    resetProject(false);
+    projectName.value = property;
+    visitDate.value = todayValue();
+if (todayLabel) todayLabel.textContent = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+staffName.value = localStorage.getItem('reformHubLastStaff') || '';
+    visitTitle.value = `第${count + 1}回 現場打ち合わせ`;
+    document.querySelector('.details-card')?.setAttribute('open', '');
+    document.querySelector('.details-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('同じ物件に新しい記録を追加します');
+    return;
+  }
 
   if (loadId) {
     const projects = await getProjects();
     const project = projects.find((item) => item.id === loadId);
     if (!project) return;
-    projectName.value = project.name || '';
+    projectName.value = project.propertyName || project.name || '';
+    visitDate.value = project.visitDate || todayValue();
+    visitTitle.value = project.visitTitle || '現場打ち合わせ';
     staffName.value = project.staff || '';
     projectNote.value = project.note || '';
     aiPrompt.value = project.aiPrompt || '';
-    baseImageData = project.baseImage || project.image;
+    baseImageData = project.baseImage || project.image || null;
     activeProjectId = project.id;
-    await drawDataUrl(project.image);
-    history = [project.image];
-    emptyState.classList.add('hidden');
-    setEnabled(true);
+    if (project.image) {
+      await drawDataUrl(project.image);
+      history = [project.image];
+      emptyState.classList.add('hidden');
+      setEnabled(true);
+    } else {
+      history = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      emptyState.classList.remove('hidden');
+      setEnabled(false);
+    }
     markSaved();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('案件を開きました');
+    showToast('打ち合わせ記録を開きました');
   }
 
   if (deleteId) {
@@ -407,7 +492,11 @@ savePromptBtn.addEventListener('click', () => {
 function resetProject(confirmFirst = true) {
   if (confirmFirst && baseImageData && !confirm('新しい案件を始めますか？未保存の変更は消えます。')) return;
   projectName.value = '';
-  staffName.value = '';
+  visitDate.value = todayValue();
+if (todayLabel) todayLabel.textContent = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'short' });
+staffName.value = localStorage.getItem('reformHubLastStaff') || '';
+  visitTitle.value = '';
+  staffName.value = localStorage.getItem('reformHubLastStaff') || '';
   projectNote.value = '';
   aiPrompt.value = '';
   imageInput.value = '';
@@ -426,11 +515,11 @@ newProjectBtn.addEventListener('click', () => resetProject(true));
 deleteAllBtn.addEventListener('click', async () => {
   const projects = await getProjects();
   if (!projects.length) return;
-  if (confirm('保存した案件をすべて削除しますか？')) {
+  if (confirm('保存した物件ファイルをすべて削除しますか？')) {
     await clearProjects();
     resetProject(false);
     await renderProjects();
-    showToast('全案件を削除しました');
+    showToast('全物件ファイルを削除しました');
   }
 });
 
@@ -451,6 +540,31 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
 }
 
+
+quickMemoBtn?.addEventListener('click', () => {
+  document.querySelector('.details-card')?.setAttribute('open', '');
+  visitDate.value = todayValue();
+  if (!visitTitle.value) visitTitle.value = '現場打ち合わせメモ';
+  document.querySelector('.details-card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  setTimeout(() => projectNote.focus(), 450);
+  showToast('写真なしでメモを保存できます');
+});
+
+projectSearch?.addEventListener('input', () => {
+  const query = projectSearch.value.trim().toLocaleLowerCase('ja-JP');
+  let visible = 0;
+  document.querySelectorAll('.property-folder').forEach((folder) => {
+    const match = !query || (folder.dataset.search || '').includes(query);
+    folder.hidden = !match;
+    if (match) visible += 1;
+  });
+  const old = projectList.querySelector('.no-search-result');
+  if (old) old.remove();
+  if (query && visible === 0) projectList.insertAdjacentHTML('beforeend', '<p class="no-search-result">該当する物件がありません</p>');
+});
+
+restoreDraft();
+
 renderProjects();
 setEnabled(false);
 
@@ -466,3 +580,76 @@ customerModeBtn?.addEventListener('click', () => {
   customerModeBtn.textContent = document.body.classList.contains('customer-mode') ? '編集画面に戻る' : '👤 お客様に見せる';
 });
 imageInput?.addEventListener('change', () => setTimeout(() => document.getElementById('workspaceSection')?.scrollIntoView({behavior:'smooth'}), 350));
+
+
+// v1.4 音声入力
+(() => {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const voiceButtons = [...document.querySelectorAll('.voice-btn')];
+  const voiceStatus = document.getElementById('voiceStatus');
+  const stopVoiceBtn = document.getElementById('stopVoiceBtn');
+  let recognition = null;
+  let currentField = null;
+
+  const appendText = (field, text) => {
+    const clean = String(text || '').trim();
+    if (!clean) return;
+    const separator = field.tagName === 'TEXTAREA' && field.value.trim() ? '。' : (field.value.trim() ? ' ' : '');
+    field.value = `${field.value}${separator}${clean}`.slice(0, Number(field.maxLength) > 0 ? Number(field.maxLength) : undefined);
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.focus();
+  };
+
+  const stop = () => {
+    try { recognition?.stop(); } catch (_) {}
+    voiceStatus?.classList.add('hidden');
+    voiceButtons.forEach((button) => { button.disabled = false; button.textContent = '🎤 話して入力'; });
+  };
+
+  voiceButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      currentField = document.getElementById(button.dataset.target);
+      currentField?.focus();
+
+      if (!Recognition) {
+        showToast('キーボード左下の🎤を押して話してください');
+        button.textContent = '⬇️ 下のマイクを押す';
+        setTimeout(() => { button.textContent = '🎤 話して入力'; }, 3000);
+        return;
+      }
+
+      recognition = new Recognition();
+      recognition.lang = 'ja-JP';
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      let finalText = '';
+
+      voiceButtons.forEach((item) => item.disabled = true);
+      button.disabled = false;
+      button.textContent = '■ 音声入力を停止';
+      voiceStatus?.classList.remove('hidden');
+
+      recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const text = event.results[i][0].transcript;
+          if (event.results[i].isFinal) finalText += text; else interim += text;
+        }
+        if (interim) voiceStatus?.querySelector('strong') && (voiceStatus.querySelector('strong').textContent = interim);
+      };
+      recognition.onerror = () => {
+        showToast('音声入力を開始できません。キーボードの🎤をお試しください');
+        stop();
+      };
+      recognition.onend = () => {
+        appendText(currentField, finalText);
+        if (finalText) showToast('音声を文字にしました');
+        stop();
+      };
+
+      try { recognition.start(); } catch (_) { stop(); }
+    });
+  });
+
+  stopVoiceBtn?.addEventListener('click', stop);
+})();
