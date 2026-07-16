@@ -23,7 +23,10 @@ button.ghost { background: rgba(255,255,255,.1); color:white; border: 1px solid 
 .hidden { display:none !important; }
 .app-header { background: var(--ink); color:white; padding:24px max(18px,calc((100vw - 1020px)/2)); display:flex; justify-content:space-between; align-items:center; gap:20px; }
 .brand { display:flex; align-items:center; gap:14px; }
-.brand-logo { width:48px; height:48px; }
+.brand-logo { position:relative; width:48px; height:48px; flex:0 0 auto; border-radius:15px; background:#17211b; overflow:hidden; }
+.brand-logo::before { content:""; position:absolute; left:12px; top:15px; width:24px; height:22px; background:#f4f6f2; clip-path:polygon(50% 0,100% 38%,100% 100%,0 100%,0 38%); }
+.brand-logo::after { content:""; position:absolute; right:6px; top:6px; width:12px; height:12px; border-radius:50%; background:#ff5a1f; }
+.brand-logo span { position:absolute; z-index:1; left:20px; bottom:11px; width:8px; height:10px; background:#ff5a1f; }
 .eyebrow,.step-label { letter-spacing:.14em; font-size:11px; font-weight:900; margin:0 0 6px; }
 .eyebrow { opacity:.6; }
 .step-label { color: var(--orange); }
