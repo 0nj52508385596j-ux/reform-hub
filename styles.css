@@ -141,3 +141,18 @@ dialog::backdrop { background:rgba(17,24,20,.58); backdrop-filter:blur(2px); }
  .meeting-focus-field{padding:14px}.meeting-focus-title{font-size:22px!important}.meeting-focus-field textarea{font-size:19px;min-height:230px}.meeting-focus-field .voice-field{display:grid}.meeting-focus-field .voice-btn-large{width:100%}
  .latest-status-card{margin:12px}.latest-status-top{padding:16px}.latest-status-top h3{font-size:23px}.latest-status-body{grid-template-columns:1fr;padding:14px;gap:12px}.latest-image{max-height:190px}.latest-note{font-size:20px;line-height:1.7;padding:17px;min-height:130px}.latest-actions{padding:0 14px 14px;flex-direction:column}.latest-actions button{width:100%}
 }
+
+
+/* v1.8 現在の現場と過去物件を明確に区別 */
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sound-toggle{min-width:128px}.sound-toggle[aria-pressed="false"]{opacity:.65}
+.current-site-banner{max-width:1020px;margin:22px auto 0;padding:18px 22px;border-radius:20px;background:linear-gradient(135deg,#eaf8ed,#fff7e8);border:3px solid #2f8f4e;box-shadow:0 12px 28px rgba(47,143,78,.14);display:flex;align-items:center;gap:14px}
+.current-site-banner .current-site-mark{width:18px;height:18px;border-radius:50%;background:#2f8f4e;color:transparent;box-shadow:0 0 0 7px rgba(47,143,78,.14);flex:0 0 auto}
+.current-site-banner small{display:block;font-weight:900;color:#23723d;letter-spacing:.08em;margin-bottom:4px}.current-site-banner strong{font-size:clamp(20px,3vw,28px);display:block;color:#17211b}
+.saved-card{background:#e9ece8;border:2px solid #c9cfca;box-shadow:none}.saved-card .section-title-row{align-items:flex-start}.saved-card h2{color:#4e5650}.archive-explain{margin:7px 0 0;color:#6a716c;font-weight:700}.past-label{color:#687069}
+.property-folder{position:relative}.property-folder.past-property{background:#f4f5f3!important;border:2px solid #c9ceca!important;box-shadow:none!important;filter:saturate(.65)}
+.property-folder.past-property::before{content:"過去物件";position:absolute;right:14px;top:14px;background:#687069;color:#fff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:900;letter-spacing:.08em;z-index:3}
+.property-folder.past-property .property-folder-header{padding-right:92px}.property-folder.past-property .latest-status-card{background:#e8ebe8;border-color:#c2c8c3}.property-folder.past-property .latest-label{color:#626a64}.property-folder.past-property .latest-badge{background:#727a74!important;color:#fff!important}.property-folder.past-property .open-latest{background:#59615b!important}
+.property-folder.current-property{border:3px solid #2f8f4e!important;box-shadow:0 14px 36px rgba(47,143,78,.16)!important;background:#fff!important}
+.property-folder.current-property::before{content:"現在の現場";position:absolute;right:14px;top:14px;background:#2f8f4e;color:#fff;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:900;letter-spacing:.08em;z-index:3}.property-folder.current-property .property-folder-header{padding-right:110px}
+.archive-divider{display:flex;align-items:center;gap:12px;margin:22px 0 10px;color:#687069;font-weight:900}.archive-divider::before,.archive-divider::after{content:"";height:2px;background:#c9ceca;flex:1}
+@media (max-width:680px){.header-actions{width:100%}.sound-toggle{flex:1}.current-site-banner{margin:14px 12px 0;padding:15px 17px}.property-folder.past-property::before,.property-folder.current-property::before{position:static;display:inline-block;margin:0 0 10px}.property-folder.past-property .property-folder-header,.property-folder.current-property .property-folder-header{padding-right:0}.saved-card .section-title-row{display:block}.danger-text{margin-top:10px}}

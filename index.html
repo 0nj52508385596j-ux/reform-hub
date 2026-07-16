@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#17211b" />
   <meta name="description" content="写真を撮る、描く、見せる。誰でも迷わず使えるリフォーム提案ツール" />
-  <title>Reform Hub｜最新状況がすぐ分かる</title>
+  <title>Reform Hub｜現在と過去がすぐ分かる</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -15,7 +15,7 @@
       <div class="brand-logo" aria-hidden="true"><span></span></div>
       <div><h1>Reform Hub</h1><p class="subtitle">撮る・描く・見せる</p></div>
     </div>
-    <button id="installBtn" class="ghost hidden" type="button">ホーム画面に追加</button>
+    <div class="header-actions"><button id="soundToggleBtn" class="ghost sound-toggle" type="button" aria-pressed="true">🔊 操作音 ON</button><button id="installBtn" class="ghost hidden" type="button">ホーム画面に追加</button></div>
   </header>
 
   <main class="container simple-container">
@@ -66,6 +66,8 @@
       <div class="save-line"><span id="saveStatus" class="status-pill">未保存</span><span id="storageStatus">この端末に保存</span></div>
     </section>
 
+    <section id="currentSiteBanner" class="current-site-banner"><span class="current-site-mark">●</span><div><small>現在の現場・編集中</small><strong id="currentSiteName">新しい物件</strong></div></section>
+
     <details class="card project-card details-card">
       <summary>物件名・日付・メモを入力する</summary>
       <div class="details-body">
@@ -86,7 +88,7 @@
     </details>
 
     <section class="card saved-card" id="projectsSection" aria-labelledby="savedHeading">
-      <div class="section-title-row top-row"><div><p class="step-label">PROPERTY FILES</p><h2 id="savedHeading">物件ファイル</h2></div><button id="deleteAllBtn" class="danger-text" type="button">全件削除</button></div>
+      <div class="section-title-row top-row"><div><p class="step-label past-label">ARCHIVE</p><h2 id="savedHeading">保存済み・過去の物件ファイル</h2><p class="archive-explain">ここから下は保存済みの履歴です。現在の現場ではありません。</p></div><button id="deleteAllBtn" class="danger-text" type="button">全件削除</button></div>
       <div id="projectList" class="project-list"></div>
     </section>
   </main>

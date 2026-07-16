@@ -43,6 +43,60 @@ let history = [];
 let deferredPrompt = null;
 let toastTimer = null;
 
+const soundToggleBtn = document.getElementById('soundToggleBtn');
+const currentSiteName = document.getElementById('currentSiteName');
+let soundEnabled = localStorage.getItem('reformHubSound') !== 'off';
+let audioContext = null;
+
+function updateCurrentSiteBanner() {
+  if (!currentSiteName) return;
+  currentSiteName.textContent = projectName.value.trim() || '新しい物件';
+}
+
+function playTone(kind = 'tap') {
+  if (!soundEnabled) return;
+  try {
+    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioContext.currentTime;
+    const notes = kind === 'save' ? [660, 880] : kind === 'delete' ? [260] : kind === 'open' ? [520, 660] : [440];
+    notes.forEach((frequency, index) => {
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, now + index * 0.07);
+      gain.gain.exponentialRampToValueAtTime(kind === 'tap' ? 0.035 : 0.055, now + index * 0.07 + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.07 + 0.08);
+      osc.connect(gain).connect(audioContext.destination);
+      osc.start(now + index * 0.07);
+      osc.stop(now + index * 0.07 + 0.09);
+    });
+  } catch (_) {}
+}
+
+function refreshSoundButton() {
+  if (!soundToggleBtn) return;
+  soundToggleBtn.setAttribute('aria-pressed', String(soundEnabled));
+  soundToggleBtn.textContent = soundEnabled ? '🔊 操作音 ON' : '🔇 操作音 OFF';
+}
+refreshSoundButton();
+soundToggleBtn?.addEventListener('click', (event) => {
+  event.stopPropagation();
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('reformHubSound', soundEnabled ? 'on' : 'off');
+  refreshSoundButton();
+  if (soundEnabled) playTone('open');
+});
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('button, .mega-photo-button');
+  if (!button || button.disabled || button === soundToggleBtn) return;
+  if (button.dataset.delete || button.id === 'deleteAllBtn') playTone('delete');
+  else if (button.id === 'saveProjectBtn') playTone('save');
+  else if (button.dataset.load || button.dataset.addVisit || button.id === 'showProjectsBtn') playTone('open');
+  else playTone('tap');
+}, { capture: true });
+
+
 function showToast(message) {
   window.clearTimeout(toastTimer);
   toast.textContent = message;
@@ -164,7 +218,7 @@ canvas.addEventListener('pointerleave', (event) => {
 
 imageInput.addEventListener('change', (event) => loadImageFile(event.target.files?.[0]));
 penWidth.addEventListener('input', () => { penWidthValue.textContent = penWidth.value; });
-[projectName, staffName, projectNote, visitDate, visitTitle, aiPrompt].forEach((field) => field.addEventListener('input', () => { markDirty(); saveDraft(); }));
+[projectName, staffName, projectNote, visitDate, visitTitle, aiPrompt].forEach((field) => field.addEventListener('input', () => { markDirty(); saveDraft(); updateCurrentSiteBanner(); }));
 
 function todayValue(){ const d=new Date(); const local=new Date(d.getTime()-d.getTimezoneOffset()*60000); return local.toISOString().slice(0,10); }
 visitDate.value = todayValue();
@@ -322,6 +376,7 @@ async function saveProject() {
     if (item.staff) localStorage.setItem('reformHubLastStaff', item.staff);
     clearDraft();
     activeProjectId = item.id;
+    updateCurrentSiteBanner();
     markSaved();
     await renderProjects();
     showToast('物件ファイルに記録を保存しました');
@@ -370,7 +425,8 @@ async function renderProjects() {
       const searchable = [folder.property, ...visits.flatMap(v => [v.visitTitle, v.staff, v.note])].join(' ').toLocaleLowerCase('ja-JP');
       const latestDate = latest.visitDate ? new Date(`${latest.visitDate}T00:00:00`).toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'}) : new Date(latest.updatedAt || latest.createdAt).toLocaleDateString('ja-JP');
       const latestNote = latest.note?.trim() || '打ち合わせ内容はまだ入力されていません。';
-      return `<section class="property-folder latest-layout" data-search="${escapeHtml(searchable)}">
+      const isCurrent = activeProjectId && visits.some((visit) => visit.id === activeProjectId);
+      return `<section class="property-folder latest-layout ${isCurrent ? 'current-property' : 'past-property'}" data-search="${escapeHtml(searchable)}">
         <div class="property-folder-header">
           <div class="property-folder-title"><span class="folder-icon">📁</span><div><strong>${escapeHtml(folder.property)}</strong><small>打ち合わせ記録 ${visits.length}件</small></div></div>
           <button class="add-visit-btn" data-add-visit="${encodedProperty}" data-count="${visits.length}" type="button">＋ この物件に記録を追加</button>
@@ -433,6 +489,8 @@ staffName.value = localStorage.getItem('reformHubLastStaff') || '';
     aiPrompt.value = project.aiPrompt || '';
     baseImageData = project.baseImage || project.image || null;
     activeProjectId = project.id;
+    updateCurrentSiteBanner();
+    await renderProjects();
     if (project.image) {
       await drawDataUrl(project.image);
       history = [project.image];
@@ -521,6 +579,8 @@ staffName.value = localStorage.getItem('reformHubLastStaff') || '';
   emptyState.classList.remove('hidden');
   setEnabled(false);
   markDirty();
+  updateCurrentSiteBanner();
+  renderProjects();
 }
 newProjectBtn.addEventListener('click', () => resetProject(true));
 
@@ -576,6 +636,7 @@ projectSearch?.addEventListener('input', () => {
 });
 
 restoreDraft();
+updateCurrentSiteBanner();
 
 renderProjects();
 setEnabled(false);
