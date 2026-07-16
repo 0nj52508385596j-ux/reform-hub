@@ -28,8 +28,6 @@ const deleteAllBtn = $('deleteAllBtn');
 const toast = $('toast');
 const installBtn = $('installBtn');
 
-const STORAGE_KEY = 'reformHubProjectsV1';
-const MAX_PROJECTS = 20;
 let baseImageData = null;
 let activeProjectId = null;
 let isDrawing = false;
@@ -98,7 +96,7 @@ async function loadImageFile(file) {
     canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-    baseImageData = canvas.toDataURL('image/jpeg', 0.92);
+    baseImageData = canvas.toDataURL('image/jpeg', 0.82);
     history = [baseImageData];
     activeProjectId = null;
     emptyState.classList.add('hidden');
@@ -183,54 +181,118 @@ clearDrawingBtn.addEventListener('click', async () => {
   showToast('手描きだけ消しました');
 });
 
-function getProjects() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+const DB_NAME = 'ReformHubDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'projects';
+
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) {
+      reject(new Error('IndexedDB is not supported'));
+      return;
+    }
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(STORE_NAME)) {
+        const store = database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        store.createIndex('updatedAt', 'updatedAt');
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error('データベースを開けませんでした'));
+  });
 }
 
-function setProjects(projects) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-    return true;
-  } catch {
-    showToast('保存容量が不足しています。古い案件を削除してください');
-    return false;
-  }
+async function getProjects() {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(STORE_NAME, 'readonly');
+    const request = transaction.objectStore(STORE_NAME).getAll();
+    request.onsuccess = () => {
+      const projects = Array.isArray(request.result) ? request.result : [];
+      projects.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+      resolve(projects);
+    };
+    request.onerror = () => reject(request.error);
+    transaction.oncomplete = () => database.close();
+  });
+}
+
+async function putProject(project) {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(STORE_NAME, 'readwrite');
+    transaction.objectStore(STORE_NAME).put(project);
+    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.onerror = () => { database.close(); reject(transaction.error); };
+    transaction.onabort = () => { database.close(); reject(transaction.error); };
+  });
+}
+
+async function deleteProject(id) {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(STORE_NAME, 'readwrite');
+    transaction.objectStore(STORE_NAME).delete(id);
+    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.onerror = () => { database.close(); reject(transaction.error); };
+  });
+}
+
+async function clearProjects() {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(STORE_NAME, 'readwrite');
+    transaction.objectStore(STORE_NAME).clear();
+    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.onerror = () => { database.close(); reject(transaction.error); };
+  });
 }
 
 function safeId() {
   return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function saveProject() {
+function canvasDataUrl(quality = 0.76) {
+  return canvas.toDataURL('image/jpeg', quality);
+}
+
+async function saveProject() {
   if (!baseImageData) return;
+  saveProjectBtn.disabled = true;
+  saveProjectBtn.textContent = '保存中…';
   const now = new Date().toISOString();
-  const projects = getProjects();
-  const existingIndex = activeProjectId ? projects.findIndex((item) => item.id === activeProjectId) : -1;
-  const existing = existingIndex >= 0 ? projects[existingIndex] : null;
   const item = {
-    id: existing?.id || safeId(),
+    id: activeProjectId || safeId(),
     name: projectName.value.trim() || `無題の案件 ${new Date().toLocaleDateString('ja-JP')}`,
     staff: staffName.value.trim(),
     note: projectNote.value.trim(),
     aiPrompt: aiPrompt.value.trim(),
     baseImage: baseImageData,
-    image: canvas.toDataURL('image/jpeg', 0.84),
-    createdAt: existing?.createdAt || now,
+    image: canvasDataUrl(0.76),
+    createdAt: now,
     updatedAt: now
   };
 
-  if (existingIndex >= 0) projects.splice(existingIndex, 1);
-  projects.unshift(item);
-  if (!setProjects(projects.slice(0, MAX_PROJECTS))) return;
-  activeProjectId = item.id;
-  markSaved();
-  renderProjects();
-  showToast(existing ? '案件を更新しました' : '案件を保存しました');
+  try {
+    if (activeProjectId) {
+      const projects = await getProjects();
+      const existing = projects.find((project) => project.id === activeProjectId);
+      if (existing?.createdAt) item.createdAt = existing.createdAt;
+    }
+    await putProject(item);
+    activeProjectId = item.id;
+    markSaved();
+    await renderProjects();
+    showToast('案件を保存しました');
+  } catch (error) {
+    console.error(error);
+    showToast('保存できませんでした。Safariのプライベートブラウズを解除して再度お試しください');
+  } finally {
+    saveProjectBtn.textContent = '💾 案件を保存';
+    saveProjectBtn.disabled = !baseImageData;
+  }
 }
 
 function escapeHtml(value) {
@@ -239,35 +301,40 @@ function escapeHtml(value) {
   }[character]));
 }
 
-function renderProjects() {
-  const projects = getProjects();
-  if (!projects.length) {
-    projectList.innerHTML = '<p class="hint">まだ保存した案件はありません。写真を入れて「案件を保存」を押してください。</p>';
-    return;
+async function renderProjects() {
+  try {
+    const projects = await getProjects();
+    if (!projects.length) {
+      projectList.innerHTML = '<p class="hint">まだ保存した案件はありません。写真を入れて「案件を保存」を押してください。</p>';
+      return;
+    }
+    projectList.innerHTML = projects.map((project) => `
+      <article class="project-item">
+        <img src="${project.image}" alt="${escapeHtml(project.name)}" />
+        <div>
+          <strong>${escapeHtml(project.name)}</strong>
+          <small>${escapeHtml(project.staff || '担当者未入力')}・${new Date(project.updatedAt || project.createdAt).toLocaleString('ja-JP')}</small>
+          <span class="project-note-preview">${escapeHtml(project.note || 'メモなし')}</span>
+        </div>
+        <div class="project-item-actions">
+          <button data-load="${project.id}" type="button">開く</button>
+          <button data-delete="${project.id}" type="button">削除</button>
+        </div>
+      </article>`).join('');
+  } catch (error) {
+    console.error(error);
+    projectList.innerHTML = '<p class="hint">保存案件を読み込めませんでした。Safariのプライベートブラウズでは通常モードで開いてください。</p>';
   }
-  projectList.innerHTML = projects.map((project) => `
-    <article class="project-item">
-      <img src="${project.image}" alt="${escapeHtml(project.name)}" />
-      <div>
-        <strong>${escapeHtml(project.name)}</strong>
-        <small>${escapeHtml(project.staff || '担当者未入力')}・${new Date(project.updatedAt || project.createdAt).toLocaleString('ja-JP')}</small>
-        <span class="project-note-preview">${escapeHtml(project.note || 'メモなし')}</span>
-      </div>
-      <div class="project-item-actions">
-        <button data-load="${project.id}" type="button">開く</button>
-        <button data-delete="${project.id}" type="button">削除</button>
-      </div>
-    </article>`).join('');
 }
 
 projectList.addEventListener('click', async (event) => {
   const target = event.target.closest('button');
   if (!target) return;
-  const projects = getProjects();
   const loadId = target.dataset.load;
   const deleteId = target.dataset.delete;
 
   if (loadId) {
+    const projects = await getProjects();
     const project = projects.find((item) => item.id === loadId);
     if (!project) return;
     projectName.value = project.name || '';
@@ -287,9 +354,9 @@ projectList.addEventListener('click', async (event) => {
 
   if (deleteId) {
     if (!confirm('この案件を削除しますか？')) return;
-    setProjects(projects.filter((item) => item.id !== deleteId));
+    await deleteProject(deleteId);
     if (activeProjectId === deleteId) resetProject(false);
-    renderProjects();
+    await renderProjects();
     showToast('案件を削除しました');
   }
 });
@@ -356,12 +423,13 @@ function resetProject(confirmFirst = true) {
 }
 newProjectBtn.addEventListener('click', () => resetProject(true));
 
-deleteAllBtn.addEventListener('click', () => {
-  if (!getProjects().length) return;
+deleteAllBtn.addEventListener('click', async () => {
+  const projects = await getProjects();
+  if (!projects.length) return;
   if (confirm('保存した案件をすべて削除しますか？')) {
-    localStorage.removeItem(STORAGE_KEY);
+    await clearProjects();
     resetProject(false);
-    renderProjects();
+    await renderProjects();
     showToast('全案件を削除しました');
   }
 });
@@ -385,3 +453,16 @@ if ('serviceWorker' in navigator) {
 
 renderProjects();
 setEnabled(false);
+
+// v1.3 simple navigation
+const showProjectsBtn = document.getElementById('showProjectsBtn');
+const helpBtn = document.getElementById('helpBtn');
+const helpDialog = document.getElementById('helpDialog');
+const customerModeBtn = document.getElementById('customerModeBtn');
+showProjectsBtn?.addEventListener('click', () => document.getElementById('projectsSection')?.scrollIntoView({behavior:'smooth'}));
+helpBtn?.addEventListener('click', () => helpDialog?.showModal());
+customerModeBtn?.addEventListener('click', () => {
+  document.body.classList.toggle('customer-mode');
+  customerModeBtn.textContent = document.body.classList.contains('customer-mode') ? '編集画面に戻る' : '👤 お客様に見せる';
+});
+imageInput?.addEventListener('change', () => setTimeout(() => document.getElementById('workspaceSection')?.scrollIntoView({behavior:'smooth'}), 350));
