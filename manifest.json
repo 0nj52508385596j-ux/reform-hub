@@ -1,5 +1,5 @@
 {
-  "name": "Reform Hub v7.1 — CAINZ365 FIELD MODE",
+  "name": "Reform Hub v7.2 — CAINZ365 FIELD MODE",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
@@ -17,5 +17,5 @@
       "type": "image/png"
     }
   ],
-  "description": "CAINZ365ブランドイントロを搭載した現場カルテ"
+  "description": "全ボタン停止の原因を修正したCAINZ365現場カルテ"
 }

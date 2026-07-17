@@ -2,12 +2,18 @@
 const $=id=>document.getElementById(id); const DB='ReformHubDB', STORE='projects';
 const state={id:null,base:null,history:[],photos:[],activePhoto:-1,members:{},sendHistory:{},updatedAt:null};
 const canvas=$('canvas'),ctx=canvas.getContext('2d'),today=new Date();
-$('today').textContent=today.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+const todayEl=$('today');if(todayEl)todayEl.textContent=today.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 $('date').value=new Date(Date.now()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
 $('staff').value=localStorage.getItem('rhStaff')||'';
 let deferredPrompt,draw=false,drawMode=false,drawArmedAt=0,strokeMoved=false,timer;
-function toast(t){clearTimeout(timer);$('toast').textContent=t;$('toast').classList.add('show');timer=setTimeout(()=>$('toast').classList.remove('show'),2200)}
-function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));scrollTo({top:0,behavior:'smooth'})}
+function toast(t){
+  clearTimeout(timer);
+  const el=$('toast');
+  if(!el){console.log(t);return}
+  el.textContent=t;el.classList.add('show');
+  timer=setTimeout(()=>el.classList.remove('show'),2200)
+}
+function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>screen(b.dataset.go));
 function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE)){const s=r.result.createObjectStore(STORE,{keyPath:'id'});s.createIndex('updatedAt','updatedAt')}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function all(){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt))));r.onerror=()=>rej(r.error)})}

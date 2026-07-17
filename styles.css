@@ -674,3 +674,11 @@ html.splash-active,html.splash-active body{overflow:hidden}
   .splash-system{left:16px}
   .splash-version{right:16px}
 }
+
+.field-today-date{
+  display:block;
+  margin-top:10px;
+  color:#7F878D;
+  font-size:11px;
+  letter-spacing:.04em;
+}
