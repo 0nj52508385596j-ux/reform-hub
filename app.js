@@ -40,10 +40,10 @@ function fields(){
 }
 function draft(){localStorage.setItem('rhDraft',JSON.stringify({...fields(),id:state.id,history:undefined}));$('autosave').textContent='✓ 入力内容は途中保存されています'}
 ['projectName','area','date','staff','note','photoCaption'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='projectName')syncName();if(id==='photoCaption'&&state.activePhoto>=0)state.photos[state.activePhoto].caption=$('photoCaption').value;draft()}));
-function syncName(){$('workName').textContent=$('projectName').value.trim()||'新しい物件'}
+function syncName(){$('workName').textContent=$('projectName').value.trim()||'新しい現場カルテ'}
 async function refreshHome(){const p=await all();if(p[0]){$('currentWrap').classList.remove('hidden');$('currentName').textContent=p[0].propertyName;$('currentUpdated').textContent='最終更新 '+new Date(p[0].updatedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});$('continueBtn').onclick=()=>load(p[0])}else $('currentWrap').classList.add('hidden')}
 $('newProjectBtn').onclick=()=>{$('newName').value='';$('newDialog').showModal()};
-$('createBtn').onclick=()=>{reset();$('projectName').value=$('newName').value.trim()||'新しい物件';syncName();$('newDialog').close();screen('work');setTimeout(()=>$('memberDialog').showModal(),300)};
+$('createBtn').onclick=()=>{reset();$('projectName').value=$('newName').value.trim()||'新しい現場カルテ';syncName();$('newDialog').close();screen('work');setTimeout(()=>$('memberDialog').showModal(),300)};
 $('listBtn').onclick=async()=>{await render();screen('projects')};
 function reset(){
   state.id=null;state.base=null;state.history=[];state.photos=[];state.activePhoto=-1;
