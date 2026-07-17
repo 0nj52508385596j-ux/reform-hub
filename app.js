@@ -1,6 +1,6 @@
 'use strict';
 const $=id=>document.getElementById(id); const DB='ReformHubDB', STORE='projects';
-const state={id:null,base:null,history:[],members:{},updatedAt:null};
+const state={id:null,base:null,history:[],members:{},sendHistory:{},updatedAt:null};
 const canvas=$('canvas'),ctx=canvas.getContext('2d'),today=new Date();
 $('today').textContent=today.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 $('date').value=new Date(Date.now()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
@@ -14,7 +14,7 @@ async function all(){const db=await openDB();return new Promise((res,rej)=>{cons
 async function put(x){const db=await openDB();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).put(x);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 async function del(id){const db=await openDB();return new Promise((res,rej)=>{const t=db.transaction(STORE,'readwrite');t.objectStore(STORE).delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 const uid=()=>crypto.randomUUID?.()||Date.now()+'-'+Math.random();
-function fields(){return {id:state.id||uid(),propertyName:$('projectName').value.trim()||'名称未入力の物件',workArea:$('area').value,date:$('date').value,staff:$('staff').value.trim(),note:$('note').value.trim(),image:state.base?canvas.toDataURL('image/jpeg',.8):null,baseImage:state.base,members:state.members||{},updatedAt:new Date().toISOString(),createdAt:state.createdAt||new Date().toISOString()}}
+function fields(){return {id:state.id||uid(),propertyName:$('projectName').value.trim()||'名称未入力の物件',workArea:$('area').value,date:$('date').value,staff:$('staff').value.trim(),note:$('note').value.trim(),image:state.base?canvas.toDataURL('image/jpeg',.8):null,baseImage:state.base,members:state.members||{},sendHistory:state.sendHistory||{},updatedAt:new Date().toISOString(),createdAt:state.createdAt||new Date().toISOString()}}
 function draft(){localStorage.setItem('rhDraft',JSON.stringify({...fields(),id:state.id,history:undefined}));$('autosave').textContent='✓ 入力内容は途中保存されています'}
 ['projectName','area','date','staff','note'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='projectName')syncName();draft()}));
 function syncName(){$('workName').textContent=$('projectName').value.trim()||'新しい物件'}
@@ -22,7 +22,7 @@ async function refreshHome(){const p=await all();if(p[0]){$('currentWrap').class
 $('newProjectBtn').onclick=()=>{$('newName').value='';$('newDialog').showModal()};
 $('createBtn').onclick=()=>{reset();$('projectName').value=$('newName').value.trim()||'新しい物件';syncName();$('newDialog').close();screen('work');setTimeout(()=>$('memberDialog').showModal(),300)};
 $('listBtn').onclick=async()=>{await render();screen('projects')};
-function reset(){state.id=null;state.base=null;state.history=[];state.members={};state.createdAt=null;ctx.clearRect(0,0,canvas.width,canvas.height);$('empty').classList.remove('hidden');$('projectName').value='';$('note').value='';$('area').value='家全体';$('date').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);$('undoBtn').disabled=$('clearBtn').disabled=true}
+function reset(){state.id=null;state.base=null;state.history=[];state.members={};state.sendHistory={};state.createdAt=null;ctx.clearRect(0,0,canvas.width,canvas.height);$('empty').classList.remove('hidden');$('projectName').value='';$('note').value='';$('area').value='家全体';$('date').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);$('undoBtn').disabled=$('clearBtn').disabled=true}
 $('photoInput').onchange=e=>loadPhoto(e.target.files?.[0]);
 function loadPhoto(file){if(!file)return;const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const scale=Math.min(1,1800/Math.max(im.width,im.height));canvas.width=im.width*scale;canvas.height=im.height*scale;ctx.drawImage(im,0,0,canvas.width,canvas.height);state.base=canvas.toDataURL('image/jpeg',.84);state.history=[canvas.toDataURL()];$('empty').classList.add('hidden');$('undoBtn').disabled=$('clearBtn').disabled=false;URL.revokeObjectURL(url);draft();toast('写真を読み込みました。指やペンで書けます')};im.src=url}
 function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
@@ -39,9 +39,81 @@ $('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','cus
 $('finishBtn').onclick=async()=>{if(!$('projectName').value.trim()){toast('物件名を入れてください');$('projectName').focus();return}const p=fields();state.id=p.id;state.updatedAt=p.updatedAt;localStorage.setItem('rhStaff',p.staff);await put(p);localStorage.removeItem('rhDraft');await refreshHome();openShare(p);toast('この端末に保存しました')};
 function shareText(p){return `【Reform Hub 打合せ記録】\n物件：${p.propertyName}\n日付：${p.date||''}\n場所：${p.workArea||''}\n\n確認したこと\n${p.note||'写真をご確認ください'}\n\n担当：${p.staff||''}`}
 function blobFromData(url){return fetch(url).then(r=>r.blob())}
-async function openShare(p){$('shareProjectName').textContent=p.propertyName+'／'+(p.date||'');const m=p.members||{};const box=$('recipientButtons');box.innerHTML='';const rec=[['🏠 お客様',m.customerName,m.customerEmail,m.customerPhone],['👷 業者',m.vendorName,m.vendorEmail,m.vendorPhone],['👥 社員',m.employeeName,m.employeeEmail,''],['👤 自分',m.selfName,m.selfEmail,'']];rec.forEach(([role,name,email,phone])=>{const b=document.createElement('button');b.innerHTML=`<strong>${role}${name?'　'+esc(name):''}</strong><small>${email||phone||'未登録（送る相手から登録）'}</small>`;b.onclick=()=>{if(email)location.href=`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(shareText(p))}`;else if(phone)location.href=`sms:${phone}?body=${encodeURIComponent(shareText(p))}`;else toast('この相手のメールか携帯番号を登録してください')};box.appendChild(b)});$('nativeShare').onclick=async()=>{try{const data={title:p.propertyName+' 打合せ記録',text:shareText(p)};if(p.image){const blob=await blobFromData(p.image);const file=new File([blob],`${p.propertyName}-打合せ.jpg`,{type:'image/jpeg'});if(navigator.canShare?.({files:[file]}))data.files=[file]}await navigator.share(data)}catch(e){if(e.name!=='AbortError'){await navigator.clipboard?.writeText(shareText(p));toast('文章をコピーしました')}}};$('emailAll').onclick=()=>{const emails=[m.customerEmail,m.vendorEmail,m.employeeEmail,m.selfEmail].filter(Boolean);if(!emails.length){toast('メールアドレスがまだ登録されていません');return}location.href=`mailto:${emails.join(',')}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(shareText(p))}`};$('shareDialog').showModal()}
-$('closeShare').onclick=()=>{$('shareDialog').close();screen('home')};
-async function load(p){state.id=p.id;state.createdAt=p.createdAt;state.base=p.baseImage||p.image||null;state.members=p.members||{};$('projectName').value=p.propertyName||'';$('area').value=p.workArea||'家全体';$('date').value=p.date||$('date').value;$('staff').value=p.staff||'';$('note').value=p.note||'';syncName();if(p.image){await drawUrl(p.image);$('empty').classList.add('hidden');state.history=[p.image];$('undoBtn').disabled=$('clearBtn').disabled=false}else{$('empty').classList.remove('hidden')}screen('work')}
+async function markOpened(p,key){
+  const stamp=new Date().toISOString();
+  p.sendHistory={...(p.sendHistory||{}),[key]:stamp};
+  state.sendHistory=p.sendHistory;
+  p.updatedAt=new Date().toISOString();
+  await put(p);
+  await refreshHome();
+  return stamp;
+}
+function recipientText(p,role){
+  const lead={
+    customer:'本日のお打合せで確認した内容をお送りします。',
+    vendor:'施工に関する確認内容をお送りします。',
+    employee:'社内共有用の打合せ記録です。',
+    self:'自分用の打合せ控えです。'
+  }[role]||'打合せ記録をお送りします。';
+  return `${lead}\n\n${shareText(p)}`;
+}
+async function shareWithPhoto(p,role,label){
+  try{
+    const data={title:`${p.propertyName} 打合せ記録`,text:recipientText(p,role)};
+    if(p.image){
+      const blob=await blobFromData(p.image);
+      const file=new File([blob],`${p.propertyName}-打合せ.jpg`,{type:'image/jpeg'});
+      if(navigator.canShare?.({files:[file]}))data.files=[file];
+    }
+    await navigator.share(data);
+    await markOpened(p,role);
+    toast(`${label}への共有画面を開きました`);
+    await openShare(p,true);
+  }catch(e){
+    if(e.name!=='AbortError'){
+      await navigator.clipboard?.writeText(recipientText(p,role));
+      toast('文章をコピーしました');
+    }
+  }
+}
+async function openShare(p,reopen=false){
+  $('shareProjectName').textContent=p.propertyName+'／'+(p.date||'');
+  const m=p.members||{}, history=p.sendHistory||{};
+  const box=$('recipientButtons');box.innerHTML='';
+  const rec=[
+    {key:'customer',icon:'🏠',role:'お客様',name:m.customerName,email:m.customerEmail,phone:m.customerPhone},
+    {key:'vendor',icon:'👷',role:'業者',name:m.vendorName,email:m.vendorEmail,phone:m.vendorPhone},
+    {key:'employee',icon:'👥',role:'社員',name:m.employeeName,email:m.employeeEmail,phone:''},
+    {key:'self',icon:'👤',role:'自分',name:m.selfName,email:m.selfEmail,phone:''}
+  ];
+  rec.forEach(r=>{
+    const card=document.createElement('section');card.className='recipient-card';
+    const sent=history[r.key];
+    const when=sent?new Date(sent).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'未送信';
+    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${r.email||r.phone||'送り先未登録'}</small></div><span class="${sent?'sent':'unsent'}">${sent?'✓ 送信画面を開いた':'未送信'}</span></div><div class="recipient-time">${sent?when:''}</div><button class="send-photo">📤 この人へ写真つきで送る</button><div class="send-small"></div>`;
+    card.querySelector('.send-photo').onclick=()=>shareWithPhoto(p,r.key,r.role);
+    const small=card.querySelector('.send-small');
+    if(r.email){
+      const b=document.createElement('button');b.textContent='✉️ メールで送る';
+      b.onclick=async()=>{await markOpened(p,r.key);location.href=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(recipientText(p,r.key))}`};
+      small.appendChild(b);
+    }
+    if(r.phone){
+      const b=document.createElement('button');b.textContent='💬 SMSで送る';
+      b.onclick=async()=>{await markOpened(p,r.key);location.href=`sms:${r.phone}?body=${encodeURIComponent(recipientText(p,r.key))}`};
+      small.appendChild(b);
+    }
+    if(!r.email&&!r.phone){
+      const b=document.createElement('button');b.textContent='送る相手を登録する';
+      b.onclick=()=>{$('shareDialog').close();fillMembers();$('memberDialog').showModal()};
+      small.appendChild(b);
+    }
+    box.appendChild(card);
+  });
+  if(!reopen||!$('shareDialog').open)$('shareDialog').showModal();
+}
+$('closeShare').onclick=()=>{$('shareDialog').close();screen('home')};$('finishShareBtn').onclick=()=>{$('shareDialog').close();screen('home');toast('打合せ記録を保存しました')};
+async function load(p){state.id=p.id;state.createdAt=p.createdAt;state.base=p.baseImage||p.image||null;state.members=p.members||{};state.sendHistory=p.sendHistory||{};$('projectName').value=p.propertyName||'';$('area').value=p.workArea||'家全体';$('date').value=p.date||$('date').value;$('staff').value=p.staff||'';$('note').value=p.note||'';syncName();if(p.image){await drawUrl(p.image);$('empty').classList.add('hidden');state.history=[p.image];$('undoBtn').disabled=$('clearBtn').disabled=false}else{$('empty').classList.remove('hidden')}screen('work')}
 async function render(){const q=$('search').value.toLowerCase(),ps=(await all()).filter(p=>(p.propertyName+' '+p.note+' '+p.workArea).toLowerCase().includes(q));$('projectList').innerHTML=ps.length?'':'<div class="project-item"><h3>まだ保存された物件はありません</h3><p>ホームから「新しい物件」を始めてください。</p></div>';ps.forEach(p=>{const d=document.createElement('article');d.className='project-item';d.innerHTML=`<h3>${esc(p.propertyName)}</h3><div class="meta">${esc(p.date||'')} ・ ${esc(p.workArea||'')}</div><p>${esc((p.note||'写真の記録').slice(0,120))}</p><div class="actions"><button class="open">開く</button><button class="share">送る</button><button class="delete">削除</button></div>`;d.querySelector('.open').onclick=()=>load(p);d.querySelector('.share').onclick=()=>openShare(p);d.querySelector('.delete').onclick=async()=>{if(confirm('この物件の記録を削除しますか？')){await del(p.id);render();refreshHome()}};$('projectList').appendChild(d)})}
 $('search').oninput=render;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -49,4 +121,4 @@ $('exportBtn').onclick=async()=>{const data=JSON.stringify({version:1,exportedAt
 $('importInput').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());for(const p of j.projects||[])await put(p);await render();await refreshHome();toast('バックアップを読み込みました')}catch{toast('読み込めないファイルです')}};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e});$('installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null}else alert('iPadではSafariの共有ボタンを押し、「ホーム画面に追加」を選んでください。')};
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-(async()=>{try{const d=JSON.parse(localStorage.getItem('rhDraft')||'null');if(d){state.id=d.id||null;state.members=d.members||{};$('projectName').value=d.propertyName||'';$('area').value=d.workArea||'家全体';$('date').value=d.date||$('date').value;$('staff').value=d.staff||$('staff').value;$('note').value=d.note||'';syncName()}const self=JSON.parse(localStorage.getItem('rhSelf')||'{}');state.members.selfName=state.members.selfName||self.selfName||'';state.members.selfEmail=state.members.selfEmail||self.selfEmail||'';await refreshHome()}catch(e){console.error(e)}})();
+(async()=>{try{const d=JSON.parse(localStorage.getItem('rhDraft')||'null');if(d){state.id=d.id||null;state.members=d.members||{};state.sendHistory=d.sendHistory||{};$('projectName').value=d.propertyName||'';$('area').value=d.workArea||'家全体';$('date').value=d.date||$('date').value;$('staff').value=d.staff||$('staff').value;$('note').value=d.note||'';syncName()}const self=JSON.parse(localStorage.getItem('rhSelf')||'{}');state.members.selfName=state.members.selfName||self.selfName||'';state.members.selfEmail=state.members.selfEmail||self.selfEmail||'';await refreshHome()}catch(e){console.error(e)}})();
