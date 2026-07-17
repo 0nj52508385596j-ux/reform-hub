@@ -1,10 +1,10 @@
 {
-  "name": "Reform Hub v3.2 Touch Lock",
+  "name": "Reform Hub v4.1 — 現場を、美しく残す。",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#F4EBDD",
-  "theme_color": "#254D46",
+  "background_color": "#F4F2E9",
+  "theme_color": "#F4F2E9",
   "icons": [
     {
       "src": "icon-192.png",

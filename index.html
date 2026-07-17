@@ -3,24 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#254D46">
-  <title>Reform Hub v3｜迷わない現場カルテ</title>
+  <meta name="theme-color" content="#F4F2E9">
+  <title>Reform Hub v4.1｜現場を、美しく残す。</title>
   <meta name="description" content="住宅リフォームの打合せを写真・手書き・メモで記録し、お客様・業者・社員・自分へ一人ずつ確実に共有する現場カルテ">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header>
-  <div class="brand"><span class="logo"><i></i><b>R</b></span><div><h1>Reform Hub</h1><p>PHOTO · NOTE · SHARE</p></div></div>
+  <div class="brand">
+      <span class="logo"><b>R</b><i></i></span>
+      <div><h1>Reform Hub</h1><p>GENBA NOTE</p></div>
+    </div>
   <button id="installBtn" class="quiet">＋ ホーム画面に追加</button>
 </header>
 
 <main>
   <section id="home" class="screen active">
     <div class="hero">
-      <p id="today"></p>
-      <h2>今日は、どの物件ですか？</h2>
-      <button id="newProjectBtn" class="big primary"><b>＋</b><span>新しい物件</span></button>
+      <div class="hero-copy">
+        <p id="today"></p>
+        <span class="hero-label">REFORM FIELD RECORD</span>
+        <h2>今日は、<br>どの物件ですか？</h2>
+        <p class="hero-sub">写真と手書きで、打合せを<br>やさしく、確かに残します。</p>
+        <button id="newProjectBtn" class="big primary"><b>＋</b><span>新しい物件</span></button>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <span class="sun"></span>
+        <span class="house"></span>
+        <span class="leaf leaf-a"></span>
+        <span class="leaf leaf-b"></span>
+      </div>
     </div>
 
     <div id="currentWrap" class="current-card hidden">
@@ -45,7 +58,7 @@
 
     <div class="canvas-box" id="canvasBox">
       <canvas id="canvas" width="1200" height="800"></canvas>
-      <div id="viewBadge" class="mode-badge">🔒 見るモード</div>
+      <div id="viewBadge" class="mode-badge">🔒 見るモード</div><div class="photo-first-badge">PHOTO NOTE</div>
       <button id="startDrawBtn" class="draw-start" type="button"><span>✎</span> 写真に書く</button>
       <div id="empty"><span>🏠</span><strong>まず写真を撮ってください</strong><small>写真なしでメモだけ残すこともできます</small></div>
     </div>
@@ -87,13 +100,13 @@
 <dialog id="newDialog"><form method="dialog" class="dialog-card"><button class="x" value="cancel">×</button><h2>新しい物件</h2><p>最初は物件名だけで大丈夫です。</p><label>物件名<input id="newName" autofocus placeholder="例：熊本市〇〇様邸"></label><button id="createBtn" type="button" class="big primary">この物件を始める</button></form></dialog>
 
 <dialog id="memberDialog"><form method="dialog" class="dialog-card large"><button class="x" value="cancel">×</button><h2>この物件の送る相手</h2><p>一度登録すれば、次回から入力しません。空欄でも使えます。</p><div class="member-list">
-  <fieldset><legend>🏠 お客様</legend><input id="customerName" placeholder="お名前"><input id="customerEmail" type="email" placeholder="メール"><input id="customerPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">いつもの送り方<select id="customerMethod"><option value="email">メール</option><option value="sms">SMS</option><option value="share">LINEなど写真付き共有</option></select></label></fieldset>
-  <fieldset><legend>👷 業者</legend><input id="vendorName" placeholder="会社名・担当者"><input id="vendorEmail" type="email" placeholder="メール"><input id="vendorPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">いつもの送り方<select id="vendorMethod"><option value="email">メール</option><option value="sms">SMS</option><option value="share">LINEなど写真付き共有</option></select></label></fieldset>
-  <fieldset><legend>👥 社員</legend><input id="employeeName" placeholder="社員名"><input id="employeeEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">いつもの送り方<select id="employeeMethod"><option value="teams">Teams</option><option value="email">メール</option><option value="share">写真付き共有</option></select></label></fieldset>
-  <fieldset><legend>👤 自分</legend><input id="selfName" placeholder="自分の名前"><input id="selfEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">いつもの送り方<select id="selfMethod"><option value="teams">Teams</option><option value="email">メール</option><option value="share">写真付き共有</option></select></label></fieldset>
+  <fieldset><legend>🏠 お客様</legend><input id="customerName" placeholder="お名前"><input id="customerEmail" type="email" placeholder="メール"><input id="customerPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">普段使うアプリ<select id="customerMethod"><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option><option value="teams">Teams</option></select></label></fieldset>
+  <fieldset><legend>👷 業者</legend><input id="vendorName" placeholder="会社名・担当者"><input id="vendorEmail" type="email" placeholder="メール"><input id="vendorPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">普段使うアプリ<select id="vendorMethod"><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option><option value="teams">Teams</option></select></label></fieldset>
+  <fieldset><legend>👥 社員</legend><input id="employeeName" placeholder="社員名"><input id="employeeEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">普段使うアプリ<select id="employeeMethod"><option value="teams">Teams</option><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option></select></label></fieldset>
+  <fieldset><legend>👤 自分</legend><input id="selfName" placeholder="自分の名前"><input id="selfEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">普段使うアプリ<select id="selfMethod"><option value="teams">Teams</option><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option></select></label></fieldset>
 </div><button id="saveMembersBtn" type="button" class="big primary">登録する</button></form></dialog>
 
-<dialog id="shareDialog"><div class="dialog-card large share-one"><button id="closeShare" class="x">×</button><div class="done-mark">✓</div><h2>一人ずつ、確認して送る</h2><p id="shareProjectName"></p><div class="share-guide">最初に登録した「いつもの送り方」で開きます。毎回選び直す必要はありません。</div><div id="recipientButtons" class="recipient-buttons"></div><button id="finishShareBtn" class="big dark">送る作業を終える</button><small class="legal">送信前に内容を確認できます。アプリから勝手に送信はしません。</small></div></dialog>
+<dialog id="shareDialog"><div class="dialog-card large share-one"><button id="closeShare" class="x">×</button><div class="done-mark">✓</div><h2>一人ずつ、確認して送る</h2><p id="shareProjectName"></p><div class="share-guide">最初に登録した「普段使うアプリ」で開きます。毎回選び直す必要はありません。</div><div id="recipientButtons" class="recipient-buttons"></div><button id="finishShareBtn" class="big dark">送る作業を終える</button><small class="legal">送信前に内容を確認できます。アプリから勝手に送信はしません。</small></div></dialog>
 
 
 <dialog id="confirmSentDialog">
