@@ -13,9 +13,22 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<div id="brandSplash" class="brand-splash" aria-hidden="true">
+  <div class="splash-grid"></div>
+  <div class="splash-version">v7.1</div>
+  <div class="splash-system">PROJECT RECORD SYSTEM</div>
+  <div class="splash-center">
+    <img src="cainz365-logo.png" alt="CAINZ365 Reform & Renovation" class="splash-logo">
+    <div class="splash-field">FIELD MODE</div>
+    <div class="splash-tagline">撮る。描く。伝わる。</div>
+    <div class="splash-line"><span></span></div>
+  </div>
+</div>
+
 <header class="app-sidebar field-sidebar">
   <div class="brand field-brand">
-    <span class="field-brand-mark">RH</span>
+    <span class="field-brand-mark logo-mark"><img src="cainz365-logo.png" alt="CAINZ365"></span>
     <div><span>FIELD MODE</span><h1>Reform Hub</h1><p>現場カルテ</p></div>
   </div>
 
@@ -36,7 +49,7 @@
 <main>
   <section id="home" class="screen active field-home">
   <div class="field-mobile-head">
-    <div><span>FIELD MODE</span><b>Reform Hub</b></div>
+    <div class="mobile-brand-lockup"><img src="cainz365-logo.png" alt="CAINZ365"><div><span>FIELD MODE</span><b>Reform Hub</b></div></div>
     <button class="mobile-menu" aria-label="メニュー"><span></span><span></span><span></span></button>
   </div>
 
@@ -235,5 +248,21 @@
 
 <div id="toast"></div>
 <script src="app.js"></script>
+
+<script>
+(function(){
+  const splash=document.getElementById('brandSplash');
+  if(!splash) return;
+  document.documentElement.classList.add('splash-active');
+  window.addEventListener('load',()=>{
+    setTimeout(()=>splash.classList.add('is-leaving'),1050);
+    setTimeout(()=>{
+      splash.remove();
+      document.documentElement.classList.remove('splash-active');
+    },1550);
+  });
+})();
+</script>
+
 </body>
 </html>

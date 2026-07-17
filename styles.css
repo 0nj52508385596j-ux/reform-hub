@@ -573,3 +573,104 @@ main,.screen{background:var(--field-bg)!important}
 .field-start:active,[data-action="new-project"]:active{transform:translateY(2px);filter:brightness(.94)}
 .field-start:focus-visible,[data-action="new-project"]:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .home-action-status{min-height:16px;margin-top:8px;color:#FFB27A;font-size:11px}
+
+
+/* =========================================================
+   v7.1 CAINZ365 branded splash
+   ========================================================= */
+html.splash-active,html.splash-active body{overflow:hidden}
+.brand-splash{
+  position:fixed;inset:0;z-index:99999;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(0,128,96,.12),transparent 34%),
+    linear-gradient(145deg,#171A1D,#090B0C 76%);
+  color:#fff;
+  opacity:1;
+  transition:opacity .45s ease,visibility .45s ease;
+}
+.brand-splash.is-leaving{opacity:0;visibility:hidden}
+.splash-grid{
+  position:absolute;inset:0;opacity:.12;
+  background-image:
+    linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px);
+  background-size:34px 34px;
+  mask-image:linear-gradient(to bottom,transparent 0,#000 18%,#000 80%,transparent 100%);
+}
+.splash-center{
+  position:relative;z-index:2;width:min(78vw,520px);text-align:center;
+  transform:translateY(8px);
+  animation:splashRise .85s cubic-bezier(.22,.8,.22,1) both;
+}
+.splash-logo{
+  display:block;width:min(72vw,430px);max-height:240px;
+  object-fit:contain;margin:0 auto 18px;
+  filter:drop-shadow(0 18px 30px rgba(0,0,0,.32));
+  animation:logoFade .65s ease both;
+}
+.splash-field{
+  font-family:Inter,"Noto Sans JP",sans-serif;
+  font-size:13px;font-weight:800;letter-spacing:.33em;
+  color:#F2F4F4;margin-left:.33em;
+  animation:fieldFade .6s .18s ease both;
+}
+.splash-tagline{
+  margin-top:18px;font-size:15px;font-weight:700;letter-spacing:.08em;
+  color:#C8CDCF;
+  animation:fieldFade .6s .28s ease both;
+}
+.splash-line{
+  width:100%;height:2px;background:rgba(255,255,255,.1);
+  margin-top:26px;overflow:hidden;
+}
+.splash-line span{
+  display:block;width:100%;height:100%;
+  background:linear-gradient(90deg,#007F5F,#FF6A00);
+  transform-origin:left center;
+  animation:lineRun .75s .25s cubic-bezier(.22,.8,.22,1) both;
+}
+.splash-version,.splash-system{
+  position:absolute;z-index:2;bottom:24px;
+  font-family:Inter,sans-serif;font-size:8px;letter-spacing:.18em;
+  color:#687076;
+}
+.splash-version{right:24px}
+.splash-system{left:24px}
+@keyframes logoFade{
+  from{opacity:0;transform:scale(.96)}
+  to{opacity:1;transform:scale(1)}
+}
+@keyframes fieldFade{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes lineRun{
+  from{transform:scaleX(0)}
+  to{transform:scaleX(1)}
+}
+@keyframes splashRise{
+  from{transform:translateY(18px)}
+  to{transform:translateY(8px)}
+}
+
+.logo-mark{
+  width:58px!important;height:48px!important;
+  background:#F4F4F0!important;padding:5px 6px!important;
+  border-radius:3px!important;overflow:hidden;
+}
+.logo-mark img{
+  width:100%;height:100%;object-fit:contain;display:block
+}
+.mobile-brand-lockup{display:flex!important;align-items:center;gap:10px}
+.mobile-brand-lockup>img{
+  width:46px;height:32px;object-fit:contain;background:#F4F4F0;
+  padding:3px;border-radius:2px
+}
+.mobile-brand-lockup>div{display:flex;flex-direction:column}
+@media(max-width:600px){
+  .splash-center{width:min(84vw,460px)}
+  .splash-logo{width:min(80vw,390px)}
+  .splash-system{left:16px}
+  .splash-version{right:16px}
+}

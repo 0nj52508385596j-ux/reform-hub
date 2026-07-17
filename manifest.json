@@ -1,5 +1,5 @@
 {
-  "name": "Reform Hub v7.0 — FIELD MODE PRO",
+  "name": "Reform Hub v7.1 — CAINZ365 FIELD MODE",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
@@ -17,5 +17,5 @@
       "type": "image/png"
     }
   ],
-  "description": "撮る・描く・伝わる。開始導線を修正した現場カルテ"
+  "description": "CAINZ365ブランドイントロを搭載した現場カルテ"
 }
