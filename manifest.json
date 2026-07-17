@@ -1,5 +1,5 @@
 {
-  "name": "Reform Hub v5.0 — Quiet Architecture",
+  "name": "Reform Hub v5.1 — Role Share",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
@@ -17,5 +17,5 @@
       "type": "image/png"
     }
   ],
-  "description": "写真・手書き・メモをひとつにまとめる、建築的で静かな現場カルテ"
+  "description": "お客様はLINE、協力業者はANDPADチャット、社内はTeamsに固定した現場カルテ"
 }

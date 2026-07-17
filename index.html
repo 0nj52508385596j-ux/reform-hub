@@ -145,14 +145,75 @@
 
 <dialog id="newDialog"><form method="dialog" class="dialog-card"><button class="x" value="cancel">×</button><h2>新しい物件</h2><p>最初は物件名だけで大丈夫です。</p><label>物件名<input id="newName" autofocus placeholder="例：熊本市〇〇様邸"></label><button id="createBtn" type="button" class="big primary">この物件を始める</button></form></dialog>
 
-<dialog id="memberDialog"><form method="dialog" class="dialog-card large"><button class="x" value="cancel">×</button><h2>この物件の送る相手</h2><p>一度登録すれば、次回から入力しません。空欄でも使えます。</p><div class="member-list">
-  <fieldset><legend>🏠 お客様</legend><input id="customerName" placeholder="お名前"><input id="customerEmail" type="email" placeholder="メール"><input id="customerPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">普段使うアプリ<select id="customerMethod"><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option><option value="teams">Teams</option></select></label></fieldset>
-  <fieldset><legend>👷 業者</legend><input id="vendorName" placeholder="会社名・担当者"><input id="vendorEmail" type="email" placeholder="メール"><input id="vendorPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">普段使うアプリ<select id="vendorMethod"><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option><option value="teams">Teams</option></select></label></fieldset>
-  <fieldset><legend>👥 社員</legend><input id="employeeName" placeholder="社員名"><input id="employeeEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">普段使うアプリ<select id="employeeMethod"><option value="teams">Teams</option><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option></select></label></fieldset>
-  <fieldset><legend>👤 自分</legend><input id="selfName" placeholder="自分の名前"><input id="selfEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">普段使うアプリ<select id="selfMethod"><option value="teams">Teams</option><option value="line">LINE</option><option value="email">メール</option><option value="sms">SMS</option></select></label></fieldset>
-</div><button id="saveMembersBtn" type="button" class="big primary">登録する</button></form></dialog>
+<dialog id="memberDialog">
+  <form method="dialog" class="dialog-card large">
+    <button class="x" value="cancel">×</button>
+    <h2>この物件の共有先</h2>
+    <p>送る手段は役割ごとに固定しました。名前だけ登録すれば使えます。</p>
 
-<dialog id="shareDialog"><div class="dialog-card large share-one"><button id="closeShare" class="x">×</button><div class="done-mark">✓</div><h2>一人ずつ、確認して送る</h2><p id="shareProjectName"></p><div class="share-guide">最初に登録した「普段使うアプリ」で開きます。毎回選び直す必要はありません。</div><div id="recipientButtons" class="recipient-buttons"></div><button id="finishShareBtn" class="big dark">送る作業を終える</button><small class="legal">送信前に内容を確認できます。アプリから勝手に送信はしません。</small></div></dialog>
+    <div class="fixed-route-summary">
+      <div><span class="route-icon line">L</span><b>お客様</b><em>LINE</em></div>
+      <div><span class="route-icon andpad">A</span><b>協力業者</b><em>ANDPADチャット</em></div>
+      <div><span class="route-icon teams">T</span><b>社内</b><em>Teams</em></div>
+    </div>
+
+    <div class="member-list fixed-members">
+      <fieldset>
+        <legend>お客様</legend>
+        <input id="customerName" placeholder="お名前">
+        <small>共有時はLINEを選びます</small>
+      </fieldset>
+
+      <fieldset>
+        <legend>協力業者</legend>
+        <input id="vendorName" placeholder="会社名・担当者">
+        <small>共有時はANDPADチャットを選びます</small>
+      </fieldset>
+
+      <fieldset>
+        <legend>社内</legend>
+        <input id="employeeName" placeholder="共有先・担当者名">
+        <small>共有時はTeamsを選びます</small>
+      </fieldset>
+
+      <fieldset>
+        <legend>自分</legend>
+        <input id="selfName" placeholder="自分の名前">
+        <small>控えはTeamsで共有します</small>
+      </fieldset>
+    </div>
+
+    <!-- 既存データとの互換性維持用 -->
+    <div class="compat-fields" aria-hidden="true">
+      <input id="customerEmail"><input id="customerPhone">
+      <input id="vendorEmail"><input id="vendorPhone">
+      <input id="employeeEmail"><input id="selfEmail">
+      <select id="customerMethod"><option value="line">LINE</option></select>
+      <select id="vendorMethod"><option value="andpad">ANDPAD</option></select>
+      <select id="employeeMethod"><option value="teams">Teams</option></select>
+      <select id="selfMethod"><option value="teams">Teams</option></select>
+    </div>
+
+    <button id="saveMembersBtn" class="primary" value="default">共有先を登録</button>
+  </form>
+</dialog>
+
+<dialog id="shareDialog">
+  <div class="dialog-card large share-one">
+    <button id="closeShare" class="x">×</button>
+    <div class="share-heading-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v7h14v-7"/></svg>
+    </div>
+    <h2>相手を選んで共有</h2>
+    <p id="shareProjectName"></p>
+    <div class="share-guide">
+      写真がある場合は自動で添付します。ボタンを押した後、表示された共有画面で指定アプリを選んでください。
+    </div>
+    <div id="recipientButtons" class="recipient-buttons fixed-route-buttons"></div>
+    <button id="finishShareBtn" class="big dark">共有作業を終える</button>
+    <small class="legal">ブラウザの仕様上、指定アプリを自動選択することはできません。選ぶアプリはボタンに大きく表示します。</small>
+  </div>
+</dialog>
 
 
 <dialog id="confirmSentDialog">

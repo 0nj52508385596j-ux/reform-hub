@@ -237,3 +237,63 @@ dialog::backdrop{background:rgba(25,28,29,.38);backdrop-filter:blur(4px)}
   .fields,.member-list{grid-template-columns:1fr}
   .drawbar{align-items:flex-start}
 }
+
+
+/* v5.1 — role-fixed sharing */
+.compat-fields{display:none!important}
+.fixed-route-summary{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0;
+}
+.fixed-route-summary>div{
+  border:1px solid var(--line);border-radius:16px;padding:14px;
+  display:grid;grid-template-columns:38px 1fr;align-items:center;column-gap:10px;
+}
+.fixed-route-summary b{font-size:13px;font-weight:500}
+.fixed-route-summary em{
+  grid-column:2;font-size:11px;font-style:normal;color:var(--muted)
+}
+.route-icon{
+  width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+  font-family:Inter,sans-serif;font-weight:600;color:#fff;
+}
+.route-icon.line{background:#20B54B}
+.route-icon.andpad{background:#176E78}
+.route-icon.teams{background:#6264A7}
+.fixed-members fieldset small{display:block;margin-top:8px;color:var(--muted);font-size:11px}
+.share-heading-mark{
+  width:52px;height:52px;border-radius:17px;background:var(--green-soft);
+  color:var(--green);display:grid;place-items:center;margin-bottom:15px;
+}
+.share-heading-mark svg{width:24px;height:24px}
+.fixed-route-buttons{gap:14px}
+.route-card{
+  padding:17px;border-radius:18px;border-left-width:4px;
+}
+.route-card.line{border-left-color:#20B54B}
+.route-card.andpad{border-left-color:#176E78}
+.route-card.teams{border-left-color:#6264A7}
+.route-main{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center}
+.route-copy{min-width:0}
+.route-role{display:block;color:var(--muted);font-size:11px}
+.route-copy strong{display:block;font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.route-copy small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.route-status{font-size:10px;border-radius:999px;padding:5px 8px;background:var(--warm)}
+.route-status.sent{background:var(--green-soft);color:var(--green)}
+.route-status.waiting{background:#FFF2E5;color:var(--orange)}
+.route-send{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--charcoal);border-radius:13px;padding:13px 15px;
+}
+.route-card.line .route-send{background:#168A38}
+.route-card.andpad .route-send{background:#145D66}
+.route-card.teams .route-send{background:#51539A}
+.route-send b{font-weight:500}
+.route-send span{font-size:18px}
+.manual-confirm{
+  display:block;width:100%;border:1px solid var(--line);border-radius:12px;
+  background:#fff;padding:10px;margin-top:8px;color:var(--charcoal)
+}
+@media(max-width:620px){
+  .fixed-route-summary{grid-template-columns:1fr}
+  .fixed-route-summary>div{grid-template-columns:38px 1fr}
+}

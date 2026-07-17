@@ -76,8 +76,8 @@ $('undoBtn').onclick=async()=>{if(state.history.length<2)return;state.history.po
 $('clearBtn').onclick=async()=>{if(!state.base)return;await drawUrl(state.base);state.history=[state.base];toast('書いた線を消しました')};
 $('voiceBtn').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('この端末では音声入力を使えません');return}const r=new SR();r.lang='ja-JP';r.interimResults=false;r.onstart=()=>{$('voiceBtn').textContent='🎤 聞いています…'};r.onresult=e=>{$('note').value+=($('note').value?'\n':'')+e.results[0][0].transcript;draft()};r.onend=()=>{$('voiceBtn').textContent='🎤 話して入力'};r.start()};
 $('memberBtn').onclick=()=>{fillMembers();$('memberDialog').showModal()};
-function fillMembers(){const m=state.members||{};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>$(k).value=m[k]||'');['customerMethod','vendorMethod','employeeMethod','selfMethod'].forEach(k=>$(k).value=m[k]||({customerMethod:'line',vendorMethod:'email',employeeMethod:'teams',selfMethod:'teams'}[k]))}
-$('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>m[k]=$(k).value.trim());['customerMethod','vendorMethod','employeeMethod','selfMethod'].forEach(k=>m[k]=$(k).value);state.members=m;localStorage.setItem('rhSelf',JSON.stringify({selfName:m.selfName,selfEmail:m.selfEmail}));$('memberDialog').close();draft();toast('送る相手を登録しました')};
+function fillMembers(){const m=state.members||{};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>$(k).value=m[k]||'');['customerMethod','vendorMethod','employeeMethod','selfMethod'].forEach(k=>$(k).value=m[k]||({customerMethod:'line',vendorMethod:'andpad',employeeMethod:'teams',selfMethod:'teams'}[k]))}
+$('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>m[k]=$(k).value.trim());m.customerMethod='line';m.vendorMethod='andpad';m.employeeMethod='teams';m.selfMethod='teams';state.members=m;localStorage.setItem('rhSelf',JSON.stringify({selfName:m.selfName,selfEmail:m.selfEmail}));$('memberDialog').close();draft();toast('共有先を登録しました')};
 $('finishBtn').onclick=async()=>{if(!$('projectName').value.trim()){toast('物件名を入れてください');$('projectName').focus();return}const p=fields();state.id=p.id;state.updatedAt=p.updatedAt;localStorage.setItem('rhStaff',p.staff);await put(p);localStorage.removeItem('rhDraft');await refreshHome();openShare(p);toast('この端末に保存しました')};
 function shareText(p){return `【Reform Hub 打合せ記録】\n物件：${p.propertyName}\n日付：${p.date||''}\n場所：${p.workArea||''}\n\n確認したこと\n${p.note||'写真をご確認ください'}\n\n担当：${p.staff||''}`}
 function blobFromData(url){return fetch(url).then(r=>r.blob())}
@@ -136,7 +136,7 @@ function recipientText(p,role){
   return `${lead}\n\n${shareText(p)}`;
 }
 function methodLabel(method){
-  return {line:'LINE',email:'メール',sms:'SMS',teams:'Teams'}[method]||'共有';
+  return {line:'LINE',andpad:'ANDPADチャット',teams:'Teams'}[method]||'共有';
 }
 async function sendToPerson(p,role,label,method,address,phone){
   const text=recipientText(p,role);
@@ -144,36 +144,33 @@ async function sendToPerson(p,role,label,method,address,phone){
   try{
     const data={
       title:`${p.propertyName} 打合せ記録`,
-      text:`【${appName}で送る】\n${text}`
+      text:`【${appName}へ共有】\n${text}`
     };
 
     if(p.image){
       const blob=await blobFromData(p.image);
       const file=new File([blob],`${p.propertyName}-打合せ記録.jpg`,{type:'image/jpeg'});
-      if(navigator.canShare?.({files:[file]})){
-        data.files=[file];
-      }
+      if(navigator.canShare?.({files:[file]})) data.files=[file];
     }
 
     await markOpened(p,role);
 
     if(navigator.share){
       await navigator.share(data);
-      toast(`${appName}を選んで、写真付きで送ってください`);
+      toast(`共有画面で「${appName}」を選んでください`);
       setTimeout(showPendingConfirm,450);
       return;
     }
 
-    // Fallback: copy text. Photo sharing requires a compatible browser/device share menu.
     try{await navigator.clipboard?.writeText(text)}catch{}
-    toast('文章をコピーしました。写真は端末の共有機能から送ってください');
+    toast(`文章をコピーしました。${appName}を開いて貼り付けてください`);
     setTimeout(showPendingConfirm,450);
   }catch(e){
     if(e.name==='AbortError'){
       localStorage.removeItem('rhPendingShare');
     }else{
       try{await navigator.clipboard?.writeText(text)}catch{}
-      toast('文章をコピーしました');
+      toast(`文章をコピーしました。${appName}へ貼り付けてください`);
       setTimeout(showPendingConfirm,450);
     }
   }
@@ -184,35 +181,60 @@ async function openShare(p,reopen=false){
   $('shareProjectName').textContent=p.propertyName+'／'+(p.date||'');
   const m=p.members||{}, history=p.sendHistory||{};
   const box=$('recipientButtons');box.innerHTML='';
+
   const rec=[
-    {key:'customer',icon:'🏠',role:'お客様',name:m.customerName,email:m.customerEmail,phone:m.customerPhone,method:m.customerMethod||'line'},
-    {key:'vendor',icon:'👷',role:'業者',name:m.vendorName,email:m.vendorEmail,phone:m.vendorPhone,method:m.vendorMethod||'email'},
-    {key:'employee',icon:'👥',role:'社員',name:m.employeeName,email:m.employeeEmail,phone:'',method:m.employeeMethod||'teams'},
-    {key:'self',icon:'👤',role:'自分',name:m.selfName,email:m.selfEmail,phone:'',method:m.selfMethod||'teams'}
+    {key:'customer',role:'お客様',name:m.customerName,method:'line',symbol:'L',routeClass:'line'},
+    {key:'vendor',role:'協力業者',name:m.vendorName,method:'andpad',symbol:'A',routeClass:'andpad'},
+    {key:'employee',role:'社内',name:m.employeeName,method:'teams',symbol:'T',routeClass:'teams'},
+    {key:'self',role:'自分の控え',name:m.selfName,method:'teams',symbol:'T',routeClass:'teams'}
   ];
+
   let complete=0;
   rec.forEach(r=>{
-    const card=document.createElement('section');card.className='recipient-card';
+    const card=document.createElement('section');
+    card.className=`recipient-card route-card ${r.routeClass}`;
     const h=historyEntry(history[r.key]);
     const confirmed=!!h.confirmedAt;
     const opened=!!h.openedAt;
     if(confirmed)complete++;
-    const status=confirmed?'✓ 確認済み':opened?'確認待ち':'未確認';
+
+    const status=confirmed?'確認済み':opened?'確認待ち':'未共有';
     const statusClass=confirmed?'sent':opened?'waiting':'unsent';
     const when=confirmed?h.confirmedAt:h.openedAt;
     const timeText=when?new Date(when).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-    const contact=r.name?`登録済み：${r.name}`:(r.email||r.phone||'送り先未登録');
-    const method=methodLabel(r.method);
+    const appName=methodLabel(r.method);
     const photoTag=p.image?'写真付き':'メモのみ';
-    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${esc(contact)}</small><div class="share-tags"><em>${esc(method)}</em><em class="photo-tag">${photoTag}</em></div></div><span class="${statusClass}">${status}</span></div><div class="recipient-time">${timeText}</div><button class="send-photo"><span>↗</span><b>${esc(method)}で送る</b><small>${photoTag}</small></button><button class="change-method">普段使うアプリを変更</button>${opened&&!confirmed?'<button class="manual-confirm">✓ 送りました</button>':''}`;
-    card.querySelector('.send-photo').onclick=()=>sendToPerson(p,r.key,r.role,r.method,r.email,r.phone);
-    card.querySelector('.change-method').onclick=()=>{$('shareDialog').close();fillMembers();$('memberDialog').showModal()};
+
+    card.innerHTML=`
+      <div class="route-main">
+        <span class="route-icon ${r.routeClass}">${r.symbol}</span>
+        <div class="route-copy">
+          <span class="route-role">${r.role}</span>
+          <strong>${r.name?esc(r.name):'名前未登録'}</strong>
+          <small>${appName}固定・${photoTag}</small>
+        </div>
+        <span class="route-status ${statusClass}">${status}</span>
+      </div>
+      ${timeText?`<div class="recipient-time">${timeText}</div>`:''}
+      <button class="send-photo route-send">
+        <b>${appName}で共有</b>
+        <span>→</span>
+      </button>
+      ${opened&&!confirmed?'<button class="manual-confirm">共有しました</button>':''}
+    `;
+
+    card.querySelector('.send-photo').onclick=()=>sendToPerson(p,r.key,r.role,r.method,'','');
     const manual=card.querySelector('.manual-confirm');
-    if(manual)manual.onclick=async()=>{await markConfirmed(p,r.key);toast(`${r.role}を確認済みにしました`);await openShare(p,true)};
+    if(manual)manual.onclick=async()=>{
+      await markConfirmed(p,r.key);
+      toast(`${r.role}を確認済みにしました`);
+      await openShare(p,true);
+    };
     box.appendChild(card);
   });
+
   const finish=$('finishShareBtn');
-  finish.textContent=complete===4?'✓ 全員の確認が完了':'送る作業を終える';
+  finish.textContent=complete===4?'✓ すべて確認済み':'共有作業を終える';
   finish.classList.toggle('complete',complete===4);
   if(!reopen||!$('shareDialog').open)$('shareDialog').showModal();
 }
