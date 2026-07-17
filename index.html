@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#173d2b">
-  <title>Reform Hub｜送る方法に迷わない</title>
+  <meta name="theme-color" content="#254D46">
+  <title>Reform Hub v3｜迷わない現場カルテ</title>
   <meta name="description" content="住宅リフォームの打合せを写真・手書き・メモで記録し、お客様・業者・社員・自分へ一人ずつ確実に共有する現場カルテ">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header>
-  <div class="brand"><span class="logo">R</span><div><h1>Reform Hub</h1><p>写真を撮って、書いて、終える。</p></div></div>
+  <div class="brand"><span class="logo"><i></i><b>R</b></span><div><h1>Reform Hub</h1><p>PHOTO · NOTE · SHARE</p></div></div>
   <button id="installBtn" class="quiet">＋ ホーム画面に追加</button>
 </header>
 
@@ -43,16 +43,21 @@
       <span>📷</span><strong>写真を撮る・選ぶ</strong><small>キッチン・浴室・内装・外壁・外構など、どの工事でも使えます</small>
     </label>
 
-    <div class="canvas-box">
+    <div class="canvas-box" id="canvasBox">
       <canvas id="canvas" width="1200" height="800"></canvas>
+      <div id="viewBadge" class="mode-badge">見るモード</div>
+      <button id="startDrawBtn" class="draw-start" type="button"><span>✎</span> 写真に書く</button>
       <div id="empty"><span>🏠</span><strong>まず写真を撮ってください</strong><small>写真なしでメモだけ残すこともできます</small></div>
     </div>
 
-    <div class="drawbar">
-      <label>色 <input id="color" type="color" value="#f15a24"></label>
-      <label>太さ <input id="width" type="range" min="3" max="28" value="9"></label>
-      <button id="undoBtn" disabled>↶ 戻す</button>
+    <div class="drawbar hidden" id="drawbar">
+      <div class="draw-status"><span class="pulse"></span><strong>書き込み中</strong></div>
+      <label class="tool-color">色 <input id="color" type="color" value="#E85D3F"></label>
+      <label class="tool-width">太さ <input id="width" type="range" min="3" max="28" value="9"></label>
+      <label class="finger-toggle"><input id="fingerDraw" type="checkbox"> 指でも書く</label>
+      <button id="undoBtn" disabled>↶ 1つ戻す</button>
       <button id="clearBtn" disabled>線を消す</button>
+      <button id="finishDrawBtn" class="finish-draw" type="button">✓ 書き込み終了</button>
     </div>
 
     <label class="note-box"><span>今回、全員で確認したこと</span><textarea id="note" rows="6" placeholder="例：キッチンの吊戸棚は撤去。壁は白で補修。コンセント位置は業者が確認。"></textarea><button id="voiceBtn" type="button">🎤 話して入力</button></label>
@@ -82,13 +87,13 @@
 <dialog id="newDialog"><form method="dialog" class="dialog-card"><button class="x" value="cancel">×</button><h2>新しい物件</h2><p>最初は物件名だけで大丈夫です。</p><label>物件名<input id="newName" autofocus placeholder="例：熊本市〇〇様邸"></label><button id="createBtn" type="button" class="big primary">この物件を始める</button></form></dialog>
 
 <dialog id="memberDialog"><form method="dialog" class="dialog-card large"><button class="x" value="cancel">×</button><h2>この物件の送る相手</h2><p>一度登録すれば、次回から入力しません。空欄でも使えます。</p><div class="member-list">
-  <fieldset><legend>🏠 お客様</legend><input id="customerName" placeholder="お名前"><input id="customerEmail" type="email" placeholder="メール"><input id="customerPhone" inputmode="tel" placeholder="携帯番号"></fieldset>
-  <fieldset><legend>👷 業者</legend><input id="vendorName" placeholder="会社名・担当者"><input id="vendorEmail" type="email" placeholder="メール"><input id="vendorPhone" inputmode="tel" placeholder="携帯番号"></fieldset>
-  <fieldset><legend>👥 社員</legend><input id="employeeName" placeholder="社員名"><input id="employeeEmail" type="email" placeholder="メール・Teamsアドレス"></fieldset>
-  <fieldset><legend>👤 自分</legend><input id="selfName" placeholder="自分の名前"><input id="selfEmail" type="email" placeholder="メール・Teamsアドレス"></fieldset>
+  <fieldset><legend>🏠 お客様</legend><input id="customerName" placeholder="お名前"><input id="customerEmail" type="email" placeholder="メール"><input id="customerPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">いつもの送り方<select id="customerMethod"><option value="email">メール</option><option value="sms">SMS</option><option value="share">LINEなど写真付き共有</option></select></label></fieldset>
+  <fieldset><legend>👷 業者</legend><input id="vendorName" placeholder="会社名・担当者"><input id="vendorEmail" type="email" placeholder="メール"><input id="vendorPhone" inputmode="tel" placeholder="携帯番号"><label class="method-label">いつもの送り方<select id="vendorMethod"><option value="email">メール</option><option value="sms">SMS</option><option value="share">LINEなど写真付き共有</option></select></label></fieldset>
+  <fieldset><legend>👥 社員</legend><input id="employeeName" placeholder="社員名"><input id="employeeEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">いつもの送り方<select id="employeeMethod"><option value="teams">Teams</option><option value="email">メール</option><option value="share">写真付き共有</option></select></label></fieldset>
+  <fieldset><legend>👤 自分</legend><input id="selfName" placeholder="自分の名前"><input id="selfEmail" type="email" placeholder="メール・Teamsアドレス"><label class="method-label">いつもの送り方<select id="selfMethod"><option value="teams">Teams</option><option value="email">メール</option><option value="share">写真付き共有</option></select></label></fieldset>
 </div><button id="saveMembersBtn" type="button" class="big primary">登録する</button></form></dialog>
 
-<dialog id="shareDialog"><div class="dialog-card large share-one"><button id="closeShare" class="x">×</button><div class="done-mark">✓</div><h2>一人ずつ、確認して送る</h2><p id="shareProjectName"></p><div class="share-guide">相手ごとに「送る」を押し、LINE・メール・SMS・Teamsなどから選びます。送った後は確認済みにします。</div><div id="recipientButtons" class="recipient-buttons"></div><button id="finishShareBtn" class="big dark">送る作業を終える</button><small class="legal">送信前に内容を確認できます。アプリから勝手に送信はしません。</small></div></dialog>
+<dialog id="shareDialog"><div class="dialog-card large share-one"><button id="closeShare" class="x">×</button><div class="done-mark">✓</div><h2>一人ずつ、確認して送る</h2><p id="shareProjectName"></p><div class="share-guide">最初に登録した「いつもの送り方」で開きます。毎回選び直す必要はありません。</div><div id="recipientButtons" class="recipient-buttons"></div><button id="finishShareBtn" class="big dark">送る作業を終える</button><small class="legal">送信前に内容を確認できます。アプリから勝手に送信はしません。</small></div></dialog>
 
 
 <dialog id="confirmSentDialog">

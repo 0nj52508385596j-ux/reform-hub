@@ -5,7 +5,7 @@ const canvas=$('canvas'),ctx=canvas.getContext('2d'),today=new Date();
 $('today').textContent=today.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 $('date').value=new Date(Date.now()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
 $('staff').value=localStorage.getItem('rhStaff')||'';
-let deferredPrompt,draw=false,timer;
+let deferredPrompt,draw=false,drawMode=false,timer;
 function toast(t){clearTimeout(timer);$('toast').textContent=t;$('toast').classList.add('show');timer=setTimeout(()=>$('toast').classList.remove('show'),2200)}
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>screen(b.dataset.go));
@@ -22,20 +22,45 @@ async function refreshHome(){const p=await all();if(p[0]){$('currentWrap').class
 $('newProjectBtn').onclick=()=>{$('newName').value='';$('newDialog').showModal()};
 $('createBtn').onclick=()=>{reset();$('projectName').value=$('newName').value.trim()||'新しい物件';syncName();$('newDialog').close();screen('work');setTimeout(()=>$('memberDialog').showModal(),300)};
 $('listBtn').onclick=async()=>{await render();screen('projects')};
-function reset(){state.id=null;state.base=null;state.history=[];state.members={};state.sendHistory={};state.createdAt=null;ctx.clearRect(0,0,canvas.width,canvas.height);$('empty').classList.remove('hidden');$('projectName').value='';$('note').value='';$('area').value='家全体';$('date').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);$('undoBtn').disabled=$('clearBtn').disabled=true}
+function reset(){state.id=null;state.base=null;state.history=[];state.members={};state.sendHistory={};state.createdAt=null;ctx.clearRect(0,0,canvas.width,canvas.height);$('empty').classList.remove('hidden');$('projectName').value='';$('note').value='';$('area').value='家全体';$('date').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);$('undoBtn').disabled=$('clearBtn').disabled=true;setDrawMode(false)}
 $('photoInput').onchange=e=>loadPhoto(e.target.files?.[0]);
-function loadPhoto(file){if(!file)return;const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const scale=Math.min(1,1800/Math.max(im.width,im.height));canvas.width=im.width*scale;canvas.height=im.height*scale;ctx.drawImage(im,0,0,canvas.width,canvas.height);state.base=canvas.toDataURL('image/jpeg',.84);state.history=[canvas.toDataURL()];$('empty').classList.add('hidden');$('undoBtn').disabled=$('clearBtn').disabled=false;URL.revokeObjectURL(url);draft();toast('写真を読み込みました。指やペンで書けます')};im.src=url}
+function loadPhoto(file){if(!file)return;const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const scale=Math.min(1,1800/Math.max(im.width,im.height));canvas.width=im.width*scale;canvas.height=im.height*scale;ctx.drawImage(im,0,0,canvas.width,canvas.height);state.base=canvas.toDataURL('image/jpeg',.84);state.history=[canvas.toDataURL()];$('empty').classList.add('hidden');$('undoBtn').disabled=$('clearBtn').disabled=false;URL.revokeObjectURL(url);draft();setDrawMode(false);toast('写真を読み込みました。必要な時だけ「写真に書く」を押してください')};im.src=url}
 function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
-canvas.onpointerdown=e=>{if(!state.base)return;draw=true;canvas.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)};
-canvas.onpointermove=e=>{if(!draw)return;e.preventDefault();const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle=$('color').value;ctx.lineWidth=+$('width').value*canvas.width/canvas.getBoundingClientRect().width;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()};
-canvas.onpointerup=canvas.onpointercancel=()=>{if(!draw)return;draw=false;state.history.push(canvas.toDataURL());if(state.history.length>15)state.history.shift();draft()};
+function setDrawMode(on){
+  drawMode=!!on;
+  $('drawbar').classList.toggle('hidden',!drawMode);
+  $('startDrawBtn').classList.toggle('hidden',drawMode||!state.base);
+  $('viewBadge').textContent=drawMode?'書くモード':'見るモード';
+  $('viewBadge').classList.toggle('drawing',drawMode);
+  canvas.classList.toggle('drawing',drawMode);
+  canvas.style.touchAction=drawMode?'none':'pan-x pan-y pinch-zoom';
+  draw=false;
+}
+$('startDrawBtn').onclick=()=>{if(!state.base)return;setDrawMode(true);toast('書くモードです。ペンだけで書けます')};
+$('finishDrawBtn').onclick=()=>{setDrawMode(false);draft();toast('書き込みを終了しました')};
+canvas.onpointerdown=e=>{
+  if(!state.base||!drawMode)return;
+  if(e.pointerType==='touch'&&!$('fingerDraw').checked)return;
+  draw=true;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);
+  const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)
+};
+canvas.onpointermove=e=>{
+  if(!draw||!drawMode)return;e.preventDefault();
+  const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle=$('color').value;
+  ctx.lineWidth=+$('width').value*canvas.width/canvas.getBoundingClientRect().width;
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()
+};
+canvas.onpointerup=canvas.onpointercancel=()=>{
+  if(!draw)return;draw=false;state.history.push(canvas.toDataURL());
+  if(state.history.length>15)state.history.shift();draft()
+};
 function drawUrl(url){return new Promise(res=>{const im=new Image();im.onload=()=>{canvas.width=im.width;canvas.height=im.height;ctx.drawImage(im,0,0);res()};im.src=url})}
 $('undoBtn').onclick=async()=>{if(state.history.length<2)return;state.history.pop();await drawUrl(state.history.at(-1));toast('一つ戻しました')};
 $('clearBtn').onclick=async()=>{if(!state.base)return;await drawUrl(state.base);state.history=[state.base];toast('書いた線を消しました')};
 $('voiceBtn').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('この端末では音声入力を使えません');return}const r=new SR();r.lang='ja-JP';r.interimResults=false;r.onstart=()=>{$('voiceBtn').textContent='🎤 聞いています…'};r.onresult=e=>{$('note').value+=($('note').value?'\n':'')+e.results[0][0].transcript;draft()};r.onend=()=>{$('voiceBtn').textContent='🎤 話して入力'};r.start()};
 $('memberBtn').onclick=()=>{fillMembers();$('memberDialog').showModal()};
-function fillMembers(){const m=state.members||{};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>$(k).value=m[k]||'')}
-$('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>m[k]=$(k).value.trim());state.members=m;localStorage.setItem('rhSelf',JSON.stringify({selfName:m.selfName,selfEmail:m.selfEmail}));$('memberDialog').close();draft();toast('送る相手を登録しました')};
+function fillMembers(){const m=state.members||{};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>$(k).value=m[k]||'');['customerMethod','vendorMethod','employeeMethod','selfMethod'].forEach(k=>$(k).value=m[k]||({customerMethod:'email',vendorMethod:'email',employeeMethod:'teams',selfMethod:'teams'}[k]))}
+$('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>m[k]=$(k).value.trim());['customerMethod','vendorMethod','employeeMethod','selfMethod'].forEach(k=>m[k]=$(k).value);state.members=m;localStorage.setItem('rhSelf',JSON.stringify({selfName:m.selfName,selfEmail:m.selfEmail}));$('memberDialog').close();draft();toast('送る相手を登録しました')};
 $('finishBtn').onclick=async()=>{if(!$('projectName').value.trim()){toast('物件名を入れてください');$('projectName').focus();return}const p=fields();state.id=p.id;state.updatedAt=p.updatedAt;localStorage.setItem('rhStaff',p.staff);await put(p);localStorage.removeItem('rhDraft');await refreshHome();openShare(p);toast('この端末に保存しました')};
 function shareText(p){return `【Reform Hub 打合せ記録】\n物件：${p.propertyName}\n日付：${p.date||''}\n場所：${p.workArea||''}\n\n確認したこと\n${p.note||'写真をご確認ください'}\n\n担当：${p.staff||''}`}
 function blobFromData(url){return fetch(url).then(r=>r.blob())}
@@ -93,32 +118,47 @@ function recipientText(p,role){
   }[role]||'打合せ記録をお送りします。';
   return `${lead}\n\n${shareText(p)}`;
 }
-async function sendToPerson(p,role,label){
+function methodLabel(method){
+  return {email:'メール',sms:'SMS',teams:'Teams',share:'写真付き共有'}[method]||'送る';
+}
+async function sendToPerson(p,role,label,method,address,phone){
+  const text=recipientText(p,role);
   try{
-    const data={title:`${p.propertyName} 打合せ記録`,text:recipientText(p,role)};
+    await markOpened(p,role);
+    if(method==='email'){
+      if(!address){toast('メールアドレスを登録してください');localStorage.removeItem('rhPendingShare');return}
+      location.href=`mailto:${encodeURIComponent(address)}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(text)}`;
+      return;
+    }
+    if(method==='sms'){
+      if(!phone){toast('携帯番号を登録してください');localStorage.removeItem('rhPendingShare');return}
+      location.href=`sms:${phone}?body=${encodeURIComponent(text)}`;
+      return;
+    }
+    if(method==='teams'){
+      if(!address){toast('Teams用アドレスを登録してください');localStorage.removeItem('rhPendingShare');return}
+      try{await navigator.clipboard?.writeText(text)}catch{}
+      location.href=`https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(address)}&message=${encodeURIComponent(text)}`;
+      return;
+    }
+    const data={title:`${p.propertyName} 打合せ記録`,text};
     if(p.image){
       const blob=await blobFromData(p.image);
       const file=new File([blob],`${p.propertyName}-打合せ.jpg`,{type:'image/jpeg'});
       if(navigator.canShare?.({files:[file]}))data.files=[file];
     }
-    await markOpened(p,role);
     if(navigator.share){
       await navigator.share(data);
-      toast(`${label}への送る画面を開きました`);
+      toast(`${label}への共有画面を開きました`);
       setTimeout(showPendingConfirm,400);
     }else{
-      await navigator.clipboard?.writeText(recipientText(p,role));
-      toast('文章をコピーしました。送るアプリに貼り付けてください');
-      setTimeout(showPendingConfirm,400);
-    }
-  }catch(e){
-    if(e.name==='AbortError'){
-      localStorage.removeItem('rhPendingShare');
-    }else{
-      try{await navigator.clipboard?.writeText(recipientText(p,role))}catch{}
+      await navigator.clipboard?.writeText(text);
       toast('文章をコピーしました');
       setTimeout(showPendingConfirm,400);
     }
+  }catch(e){
+    if(e.name==='AbortError')localStorage.removeItem('rhPendingShare');
+    else{try{await navigator.clipboard?.writeText(text)}catch{};toast('文章をコピーしました')}
   }
 }
 async function openShare(p,reopen=false){
@@ -128,10 +168,10 @@ async function openShare(p,reopen=false){
   const m=p.members||{}, history=p.sendHistory||{};
   const box=$('recipientButtons');box.innerHTML='';
   const rec=[
-    {key:'customer',icon:'🏠',role:'お客様',name:m.customerName,email:m.customerEmail,phone:m.customerPhone},
-    {key:'vendor',icon:'👷',role:'業者',name:m.vendorName,email:m.vendorEmail,phone:m.vendorPhone},
-    {key:'employee',icon:'👥',role:'社員',name:m.employeeName,email:m.employeeEmail,phone:''},
-    {key:'self',icon:'👤',role:'自分',name:m.selfName,email:m.selfEmail,phone:''}
+    {key:'customer',icon:'🏠',role:'お客様',name:m.customerName,email:m.customerEmail,phone:m.customerPhone,method:m.customerMethod||'email'},
+    {key:'vendor',icon:'👷',role:'業者',name:m.vendorName,email:m.vendorEmail,phone:m.vendorPhone,method:m.vendorMethod||'email'},
+    {key:'employee',icon:'👥',role:'社員',name:m.employeeName,email:m.employeeEmail,phone:'',method:m.employeeMethod||'teams'},
+    {key:'self',icon:'👤',role:'自分',name:m.selfName,email:m.selfEmail,phone:'',method:m.selfMethod||'teams'}
   ];
   let complete=0;
   rec.forEach(r=>{
@@ -144,9 +184,11 @@ async function openShare(p,reopen=false){
     const statusClass=confirmed?'sent':opened?'waiting':'unsent';
     const when=confirmed?h.confirmedAt:h.openedAt;
     const timeText=when?new Date(when).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-    const contact=r.email||r.phone||'送り先は共有画面で選びます';
-    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${esc(contact)}</small></div><span class="${statusClass}">${status}</span></div><div class="recipient-time">${timeText}</div><button class="send-photo">📤 この人へ送る</button>${opened&&!confirmed?'<button class="manual-confirm">✓ 送りました</button>':''}`;
-    card.querySelector('.send-photo').onclick=()=>sendToPerson(p,r.key,r.role);
+    const contact=r.email||r.phone||'送り先未登録';
+    const method=methodLabel(r.method);
+    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${esc(contact)}</small><em>${esc(method)}で送る設定</em></div><span class="${statusClass}">${status}</span></div><div class="recipient-time">${timeText}</div><button class="send-photo">📤 ${esc(method)}で送る</button><button class="change-method">送り方を変更</button>${opened&&!confirmed?'<button class="manual-confirm">✓ 送りました</button>':''}`;
+    card.querySelector('.send-photo').onclick=()=>sendToPerson(p,r.key,r.role,r.method,r.email,r.phone);
+    card.querySelector('.change-method').onclick=()=>{$('shareDialog').close();fillMembers();$('memberDialog').showModal()};
     const manual=card.querySelector('.manual-confirm');
     if(manual)manual.onclick=async()=>{await markConfirmed(p,r.key);toast(`${r.role}を確認済みにしました`);await openShare(p,true)};
     box.appendChild(card);
@@ -174,7 +216,7 @@ $('confirmSentLater').onclick=()=>{
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(showPendingConfirm,500)});
 window.addEventListener('focus',()=>setTimeout(showPendingConfirm,500));
 $('closeShare').onclick=()=>{$('shareDialog').close();screen('home')};$('finishShareBtn').onclick=()=>{$('shareDialog').close();screen('home');toast('打合せ記録を保存しました')};
-async function load(p){state.id=p.id;state.createdAt=p.createdAt;state.base=p.baseImage||p.image||null;state.members=p.members||{};state.sendHistory=p.sendHistory||{};$('projectName').value=p.propertyName||'';$('area').value=p.workArea||'家全体';$('date').value=p.date||$('date').value;$('staff').value=p.staff||'';$('note').value=p.note||'';syncName();if(p.image){await drawUrl(p.image);$('empty').classList.add('hidden');state.history=[p.image];$('undoBtn').disabled=$('clearBtn').disabled=false}else{$('empty').classList.remove('hidden')}screen('work')}
+async function load(p){state.id=p.id;state.createdAt=p.createdAt;state.base=p.baseImage||p.image||null;state.members=p.members||{};state.sendHistory=p.sendHistory||{};$('projectName').value=p.propertyName||'';$('area').value=p.workArea||'家全体';$('date').value=p.date||$('date').value;$('staff').value=p.staff||'';$('note').value=p.note||'';syncName();if(p.image){await drawUrl(p.image);$('empty').classList.add('hidden');state.history=[p.image];$('undoBtn').disabled=$('clearBtn').disabled=false;setDrawMode(false)}else{$('empty').classList.remove('hidden');setDrawMode(false)}screen('work')}
 async function render(){const q=$('search').value.toLowerCase(),ps=(await all()).filter(p=>(p.propertyName+' '+p.note+' '+p.workArea).toLowerCase().includes(q));$('projectList').innerHTML=ps.length?'':'<div class="project-item"><h3>まだ保存された物件はありません</h3><p>ホームから「新しい物件」を始めてください。</p></div>';ps.forEach(p=>{const d=document.createElement('article');d.className='project-item';d.innerHTML=`<h3>${esc(p.propertyName)}</h3><div class="meta">${esc(p.date||'')} ・ ${esc(p.workArea||'')}</div><p>${esc((p.note||'写真の記録').slice(0,120))}</p><div class="actions"><button class="open">開く</button><button class="share">送る</button><button class="delete">削除</button></div>`;d.querySelector('.open').onclick=()=>load(p);d.querySelector('.share').onclick=()=>openShare(p);d.querySelector('.delete').onclick=async()=>{if(confirm('この物件の記録を削除しますか？')){await del(p.id);render();refreshHome()}};$('projectList').appendChild(d)})}
 $('search').oninput=render;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
