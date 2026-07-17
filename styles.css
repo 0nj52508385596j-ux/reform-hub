@@ -682,3 +682,12 @@ html.splash-active,html.splash-active body{overflow:hidden}
   font-size:11px;
   letter-spacing:.04em;
 }
+#voiceBtn{
+  color:#222222 !important;
+  font-weight:700 !important;
+}
+
+.simple-details > summary{
+  color:#222222 !important;
+  font-weight:700 !important;
+}
