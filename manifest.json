@@ -1,5 +1,5 @@
 {
-  "name": "Reform Hub v5.1 — Role Share",
+  "name": "Reform Hub v5.2 — Five Photo Day",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
@@ -17,5 +17,5 @@
       "type": "image/png"
     }
   ],
-  "description": "お客様はLINE、協力業者はANDPADチャット、社内はTeamsに固定した現場カルテ"
+  "description": "1物件・1日につき最大5枚の写真へ手書きメモを残し、まとめて共有する現場カルテ"
 }

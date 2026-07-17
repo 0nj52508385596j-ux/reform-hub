@@ -98,13 +98,22 @@
     <div class="steps"><span class="on">1 写真</span><span>2 書く</span><span>3 終える</span></div>
 
     <label class="camera-button">
-      <input id="photoInput" type="file" accept="image/*" capture="environment">
-      <span class="camera-line"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg></span><strong>写真を撮る・選ぶ</strong><small>キッチン・浴室・内装・外壁・外構など、どの工事でも使えます</small>
+      <input id="photoInput" type="file" accept="image/*" capture="environment" multiple>
+      <span class="camera-line"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg></span><strong>写真を追加する</strong><small id="photoLimitText">1物件・1日につき最大5枚</small>
     </label>
+
+    
+    <section class="photo-album" id="photoAlbum">
+      <div class="album-head">
+        <div><span>今日の写真</span><strong id="photoCounter">0 / 5</strong></div>
+        <small>写真ごとに手書きと短いメモを残せます</small>
+      </div>
+      <div id="photoThumbs" class="photo-thumbs"></div>
+    </section>
 
     <div class="canvas-box" id="canvasBox">
       <canvas id="canvas" width="1200" height="800"></canvas>
-      <div id="viewBadge" class="mode-badge">見るモード</div><div class="photo-first-badge">PHOTO FIRST</div>
+      <div id="viewBadge" class="mode-badge">見るモード</div><div id="activePhotoBadge" class="photo-first-badge">0 / 5</div>
       <button id="startDrawBtn" class="draw-start" type="button"><span>✎</span> 写真に書く</button>
       <div id="empty"><span class="empty-house"><svg viewBox="0 0 48 48"><path d="M7 23 24 9l17 14v16H29V28H19v11H7Z"/></svg></span><strong>まず写真を撮ってください</strong><small>写真なしでメモだけ残すこともできます</small></div>
     </div>
@@ -119,6 +128,9 @@
       <button id="finishDrawBtn" class="finish-draw" type="button">✓ 書き込み終了</button>
     </div>
 
+    <label class="photo-caption-box"><span>この写真のひとこと</span>
+      <input id="photoCaption" maxlength="40" placeholder="例：キッチン全景、寸法確認、傷み箇所">
+    </label>
     <label class="note-box"><span>今回、全員で確認したこと</span><textarea id="note" rows="6" placeholder="例：キッチンの吊戸棚は撤去。壁は白で補修。コンセント位置は業者が確認。"></textarea><button id="voiceBtn" type="button">話して入力</button></label>
 
     <details class="simple-details">
