@@ -5,7 +5,7 @@ const canvas=$('canvas'),ctx=canvas.getContext('2d'),today=new Date();
 $('today').textContent=today.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
 $('date').value=new Date(Date.now()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
 $('staff').value=localStorage.getItem('rhStaff')||'';
-let deferredPrompt,draw=false,drawMode=false,timer;
+let deferredPrompt,draw=false,drawMode=false,drawArmedAt=0,strokeMoved=false,timer;
 function toast(t){clearTimeout(timer);$('toast').textContent=t;$('toast').classList.add('show');timer=setTimeout(()=>$('toast').classList.remove('show'),2200)}
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>screen(b.dataset.go));
@@ -28,31 +28,48 @@ function loadPhoto(file){if(!file)return;const url=URL.createObjectURL(file),im=
 function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}}
 function setDrawMode(on){
   drawMode=!!on;
+  drawArmedAt=drawMode?Date.now()+450:0;
   $('drawbar').classList.toggle('hidden',!drawMode);
   $('startDrawBtn').classList.toggle('hidden',drawMode||!state.base);
-  $('viewBadge').textContent=drawMode?'書くモード':'見るモード';
+  $('viewBadge').textContent=drawMode?'✎ 書くモード':'🔒 見るモード';
   $('viewBadge').classList.toggle('drawing',drawMode);
   canvas.classList.toggle('drawing',drawMode);
   canvas.style.touchAction=drawMode?'none':'pan-x pan-y pinch-zoom';
   draw=false;
 }
-$('startDrawBtn').onclick=()=>{if(!state.base)return;setDrawMode(true);toast('書くモードです。ペンだけで書けます')};
+$('startDrawBtn').onclick=()=>{if(!state.base)return;setDrawMode(true);toast('書くモードです。指では書けません。ペンだけ使えます')};
 $('finishDrawBtn').onclick=()=>{setDrawMode(false);draft();toast('書き込みを終了しました')};
 canvas.onpointerdown=e=>{
   if(!state.base||!drawMode)return;
-  if(e.pointerType==='touch'&&!$('fingerDraw').checked)return;
-  draw=true;e.preventDefault();canvas.setPointerCapture?.(e.pointerId);
-  const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)
+  if(Date.now()<drawArmedAt)return;
+  const fingerAllowed=$('fingerDraw').checked;
+  if(e.pointerType==='touch'&&!fingerAllowed)return;
+  if(e.pointerType==='touch'&&e.isPrimary===false)return;
+  draw=true;
+  strokeMoved=false;
+  e.preventDefault();
+  e.stopPropagation();
+  canvas.setPointerCapture?.(e.pointerId);
+  const p=pos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y)
 };
 canvas.onpointermove=e=>{
   if(!draw||!drawMode)return;e.preventDefault();
-  const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle=$('color').value;
+  const p=pos(e);strokeMoved=true;ctx.lineTo(p.x,p.y);ctx.strokeStyle=$('color').value;
   ctx.lineWidth=+$('width').value*canvas.width/canvas.getBoundingClientRect().width;
   ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke()
 };
 canvas.onpointerup=canvas.onpointercancel=()=>{
-  if(!draw)return;draw=false;state.history.push(canvas.toDataURL());
-  if(state.history.length>15)state.history.shift();draft()
+  if(!draw)return;
+  draw=false;
+  if(!strokeMoved){
+    restore(state.history[state.history.length-1]||state.base);
+    return;
+  }
+  state.history.push(canvas.toDataURL());
+  if(state.history.length>15)state.history.shift();
+  draft()
 };
 function drawUrl(url){return new Promise(res=>{const im=new Image();im.onload=()=>{canvas.width=im.width;canvas.height=im.height;ctx.drawImage(im,0,0);res()};im.src=url})}
 $('undoBtn').onclick=async()=>{if(state.history.length<2)return;state.history.pop();await drawUrl(state.history.at(-1));toast('一つ戻しました')};
