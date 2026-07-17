@@ -8,6 +8,8 @@ const emptyState = $('emptyState');
 const projectName = $('projectName');
 const staffName = $('staffName');
 const projectNote = $('projectNote');
+const workArea = $('workArea');
+const completeAndShareBtn = $('completeAndShareBtn');
 const visitDate = $('visitDate');
 const visitTitle = $('visitTitle');
 const penColor = $('penColor');
@@ -227,7 +229,7 @@ canvas.addEventListener('pointerleave', (event) => {
 
 imageInput.addEventListener('change', (event) => loadImageFile(event.target.files?.[0]));
 penWidth.addEventListener('input', () => { penWidthValue.textContent = penWidth.value; });
-[projectName, staffName, projectNote, visitDate, visitTitle, aiPrompt].forEach((field) => field.addEventListener('input', () => { markDirty(); saveDraft(); updateCurrentSiteBanner(); }));
+[projectName, staffName, projectNote, visitDate, visitTitle, aiPrompt, workArea].forEach((field) => field.addEventListener('input', () => { markDirty(); saveDraft(); updateCurrentSiteBanner(); }));
 
 function todayValue(){ const d=new Date(); const local=new Date(d.getTime()-d.getTimezoneOffset()*60000); return local.toISOString().slice(0,10); }
 visitDate.value = todayValue();
@@ -337,7 +339,7 @@ function canvasDataUrl(quality = 0.76) {
 
 const DRAFT_KEY = 'reformHubDraftV17';
 function saveDraft() {
-  const draft = { propertyName: projectName.value, staff: staffName.value, note: projectNote.value, visitDate: visitDate.value, visitTitle: visitTitle.value, savedAt: Date.now() };
+  const draft = { propertyName: projectName.value, staff: staffName.value, note: projectNote.value, visitDate: visitDate.value, visitTitle: visitTitle.value, workArea: workArea?.value || '', savedAt: Date.now() };
   try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (_) {}
 }
 function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (_) {} }
@@ -350,6 +352,7 @@ function restoreDraft() {
     if (!visitTitle.value) visitTitle.value = draft.visitTitle || '';
     if (draft.visitDate) visitDate.value = draft.visitDate;
     if (!staffName.value) staffName.value = draft.staff || '';
+    if (workArea && !workArea.value) workArea.value = draft.workArea || '';
     if (draft.propertyName || draft.note) showToast('前回の入力途中を復元しました');
   } catch (_) {}
 }
@@ -367,6 +370,7 @@ async function saveProject() {
     visitDate: visitDate.value || todayValue(),
     visitTitle: visitTitle.value.trim() || '現場打ち合わせ',
     staff: staffName.value.trim(),
+    workArea: workArea?.value || '',
     note: projectNote.value.trim(),
     aiPrompt: aiPrompt.value.trim(),
     baseImage: baseImageData,
@@ -431,7 +435,7 @@ async function renderProjects() {
       const latest = visits[0];
       const past = visits.slice(1);
       const encodedProperty = encodeURIComponent(folder.property);
-      const searchable = [folder.property, ...visits.flatMap(v => [v.visitTitle, v.staff, v.note])].join(' ').toLocaleLowerCase('ja-JP');
+      const searchable = [folder.property, ...visits.flatMap(v => [v.visitTitle, v.staff, v.workArea, v.note])].join(' ').toLocaleLowerCase('ja-JP');
       const latestDate = latest.visitDate ? new Date(`${latest.visitDate}T00:00:00`).toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'}) : new Date(latest.updatedAt || latest.createdAt).toLocaleDateString('ja-JP');
       const latestNote = latest.note?.trim() || '打ち合わせ内容はまだ入力されていません。';
       const isCurrent = activeProjectId && visits.some((visit) => visit.id === activeProjectId);
@@ -444,7 +448,7 @@ async function renderProjects() {
           <div class="latest-status-top"><div><span class="latest-label">📍 最新状況</span><h3>${escapeHtml(latest.visitTitle || '現場打ち合わせ')}</h3><p class="latest-date">${escapeHtml(latestDate)}　${latest.staff ? `担当：${escapeHtml(latest.staff)}` : ''}</p></div><span class="latest-badge">最新</span></div>
           <div class="latest-status-body">
             ${latest.image ? `<img class="latest-image" src="${latest.image}" alt="${escapeHtml(latest.visitTitle || folder.property)}" />` : ''}
-            <div class="latest-note">${escapeHtml(latestNote).replace(/\n/g,'<br>')}</div>
+            ${latest.workArea ? `<div class="latest-work-area">工事場所：${escapeHtml(latest.workArea)}</div>` : ''}<div class="latest-note">${escapeHtml(latestNote).replace(/\n/g,'<br>')}</div>
           </div>
           <div class="latest-actions"><button class="open-latest" data-load="${latest.id}" type="button">大きく開く・編集する</button><button data-delete="${latest.id}" type="button">削除</button></div>
         </article>
@@ -494,6 +498,7 @@ staffName.value = localStorage.getItem('reformHubLastStaff') || '';
     visitDate.value = project.visitDate || todayValue();
     visitTitle.value = project.visitTitle || '現場打ち合わせ';
     staffName.value = project.staff || '';
+    if (workArea) workArea.value = project.workArea || '';
     projectNote.value = project.note || '';
     aiPrompt.value = project.aiPrompt || '';
     baseImageData = project.baseImage || project.image || null;
@@ -529,6 +534,20 @@ function fileName() {
   return `${(projectName.value.trim() || 'reform-hub').replace(/[\\/:*?"<>|]/g, '_')}.jpg`;
 }
 
+completeAndShareBtn?.addEventListener('click', async () => {
+  const hasText = projectName.value.trim() || projectNote.value.trim() || visitTitle.value.trim();
+  if (!baseImageData && !hasText) {
+    showToast('まず物件名か打合せ内容を入力してください');
+    document.querySelector('.details-card')?.setAttribute('open','');
+    projectName.focus();
+    return;
+  }
+  await saveProject();
+  teamsEmail.value = localStorage.getItem('reformHubTeamsEmail') || '';
+  lastShareStatus.textContent = localStorage.getItem('reformHubLastShare') || 'まだ送信記録はありません';
+  shareDialog.showModal();
+});
+
 saveProjectBtn.addEventListener('click', saveProject);
 downloadBtn.addEventListener('click', () => {
   const link = document.createElement('a');
@@ -549,13 +568,18 @@ function shareMessage(short = false) {
   const title = visitTitle.value.trim() || '現場打ち合わせ';
   const note = projectNote.value.trim() || '本日の打ち合わせ内容をご確認ください。';
   const staff = staffName.value.trim();
+  const area = workArea?.value || '';
+  const selectedAudience = [...document.querySelectorAll('.audience-check:checked')].map(el => el.value).join('・') || '関係者';
   if (short) {
-    return `【${property}】${formattedVisitDate()}の打ち合わせ内容です。\n${note}\nご確認をお願いいたします。`;
+    return `【${property}】${formattedVisitDate()}の打ち合わせ内容です。${area ? `\n工事場所：${area}` : ''}\n共有先：${selectedAudience}\n${note}\nご確認をお願いいたします。`;
   }
   return [
     `${property} ご担当者様`,
     '',
-    `本日（${formattedVisitDate()}）の「${title}」の内容をお送りします。`,
+    `本日（${formattedVisitDate()}）の「${title}」の共通打合せ記録をお送りします。`,
+    area ? `工事場所：${area}` : '',
+    `共有先：${selectedAudience}`,
+    'この内容を、お客様・業者・社員・担当者で同じ記録として確認します。',
     '',
     note,
     '',
@@ -655,6 +679,7 @@ staffName.value = localStorage.getItem('reformHubLastStaff') || '';
   visitTitle.value = '';
   staffName.value = localStorage.getItem('reformHubLastStaff') || '';
   projectNote.value = '';
+  if (workArea) workArea.value = '';
   aiPrompt.value = '';
   imageInput.value = '';
   baseImageData = null;

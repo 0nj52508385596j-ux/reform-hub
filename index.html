@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#17211b" />
   <meta name="description" content="写真を撮る、描く、見せる。誰でも迷わず使えるリフォーム提案ツール" />
-  <title>Reform Hub｜現場をすぐ始める</title>
+  <title>Reform Hub｜写真で残す共通打合せ記録</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -13,7 +13,7 @@
   <header class="app-header simple-header">
     <div class="brand">
       <div class="brand-logo" aria-hidden="true"><span></span></div>
-      <div><h1>Reform Hub</h1><p class="subtitle">撮る・描く・見せる</p></div>
+      <div><h1>Reform Hub</h1><p class="subtitle">写真に書いて、全員で確認</p></div>
     </div>
     <div class="header-actions"><button id="soundToggleBtn" class="ghost sound-toggle" type="button" aria-pressed="true">🔊 操作音 ON</button><button id="installBtn" class="ghost install-visible" type="button">＋ ホーム画面に追加</button></div>
   </header>
@@ -22,17 +22,17 @@
     <section class="home-dashboard" id="homeDashboard" aria-label="ホーム">
       <div class="home-welcome">
         <p id="homeDate" class="home-date"></p>
-        <h2>今日の現場を、すぐ始める</h2>
-        <p>写真・メモ・共有を、ひとつの場所に。</p>
+        <h2>写真に書けば、打合せ記録が完成</h2>
+        <p>お客様・業者・社員・自分が、同じ内容を確認できます。</p>
       </div>
-      <button id="homeNewProjectBtn" class="home-new-project" type="button"><span>＋</span><strong>新しい現場を追加</strong><small>物件名と打ち合わせを新しく始めます</small></button>
+      <button id="homeNewProjectBtn" class="home-new-project" type="button"><span>①</span><strong>新しい打合せを始める</strong><small>物件名を入れて、写真を撮ります</small></button>
       <div class="home-grid">
         <label class="home-photo-button">
           <input id="imageInput" type="file" accept="image/*" capture="environment" />
-          <span>📷</span><strong>写真から始める</strong><small>撮影・画像選択</small>
+          <span>②</span><strong>写真を撮る・選ぶ</strong><small>写真に指やペンで書き込み</small>
         </label>
-        <button id="quickMemoBtn" class="home-mini-card" type="button"><span>🎤</span><strong>メモから始める</strong><small>写真なしでも保存</small></button>
-        <button id="showProjectsBtn" class="home-mini-card" type="button"><span>📁</span><strong>保存した案件</strong><small>続き・履歴を見る</small></button>
+        <button id="quickMemoBtn" class="home-mini-card" type="button"><span>🎤</span><strong>話してメモする</strong><small>文字入力が苦手でも大丈夫</small></button>
+        <button id="showProjectsBtn" class="home-mini-card" type="button"><span>③</span><strong>過去の打合せを見る</strong><small>写真を探さず、物件名から確認</small></button>
         <button id="homeInstallBtn" class="home-mini-card install-card" type="button"><span>📲</span><strong>ホーム画面に追加</strong><small>アプリのように開く</small></button>
       </div>
       <button id="helpBtn" class="home-help" type="button">？ はじめての方へ：使い方を見る</button>
@@ -40,7 +40,7 @@
 
     <section class="card workspace-card" id="workspaceSection" aria-labelledby="photoHeading">
       <div class="section-title-row top-row">
-        <div><p class="step-label">STEP 1</p><h2 id="photoHeading">写真に描く</h2></div>
+        <div><p class="step-label">STEP 1</p><h2 id="photoHeading">写真に「ここをこうする」と書く</h2></div>
         <button id="customerModeBtn" class="text-button" type="button">👤 お客様に見せる</button>
       </div>
       <div class="toolbar simple-toolbar">
@@ -50,7 +50,7 @@
       <div class="canvas-wrap" id="canvasWrap">
         <canvas id="canvas" width="1200" height="800" aria-label="現場写真への書き込みエリア"></canvas>
         <div id="emptyState" class="empty-state">
-          <div class="empty-icon">📷</div><strong>上の「写真を撮る」を押してください</strong>
+          <div class="empty-icon">📷</div><strong>「写真を撮る・選ぶ」を押してください</strong><small>写真なしでメモだけ残すこともできます</small>
         </div>
       </div>
       <div class="draw-controls big-controls">
@@ -61,10 +61,12 @@
     </section>
 
     <section class="card action-card" aria-labelledby="actionHeading">
-      <div class="section-title-row"><div><p class="step-label">STEP 2</p><h2 id="actionHeading">打ち合わせを保存・共有</h2></div></div>
-      <div class="action-grid simple-action-grid">
-        <button id="saveProjectBtn" class="primary" type="button" disabled>💾 この記録を保存</button>
-        <button id="shareBtn" class="share-main" type="button">📤 お客様・自分へ送る</button>
+      <div class="section-title-row"><div><p class="step-label">STEP 2</p><h2 id="actionHeading">打合せを全員の共通記録にする</h2></div></div>
+      <div class="one-action-explain"><strong>最後はこのボタンだけ</strong><span>保存して、送る相手を選びます</span></div>
+      <button id="completeAndShareBtn" class="complete-share-btn" type="button">✅ 打合せ完了・全員へ共有</button>
+      <div class="action-grid simple-action-grid secondary-actions">
+        <button id="saveProjectBtn" class="primary" type="button" disabled>途中保存</button>
+        <button id="shareBtn" class="share-main" type="button">送るだけ</button>
         <button id="downloadBtn" type="button" disabled>⬇️ 画像保存</button>
         <button id="aiBtn" class="ai" type="button" disabled>✨ AI提案（準備中）</button>
       </div>
@@ -82,13 +84,15 @@
           <label><span>担当者</span><div class="voice-field"><input id="staffName" lang="ja" type="text" placeholder="例：澤村" maxlength="30" /><button class="voice-btn" type="button" data-target="staffName">🎤 話して入力</button></div></label>
         </div>
         <div class="visit-grid">
+          <label><span>工事する場所</span><select id="workArea"><option value="">選んでください</option><option>キッチン</option><option>浴室</option><option>洗面・トイレ</option><option>LDK・内装</option><option>玄関・窓</option><option>屋根・外壁</option><option>庭・駐車場・外構</option><option>家全体</option><option>その他</option></select></label>
           <label><span>打ち合わせ日</span><input id="visitDate" type="date" /></label>
           <label><span>記録名</span><div class="voice-field"><input id="visitTitle" lang="ja" type="text" placeholder="例：第1回 現場打ち合わせ" maxlength="50" /><button class="voice-btn" type="button" data-target="visitTitle">🎤 話して入力</button></div></label>
         </div>
-        <label class="full-field meeting-focus-field"><span class="meeting-focus-title">今回の打ち合わせ内容</span><p class="meeting-focus-help">決まったこと・次にすること・確認事項を、話すか大きな欄へ入力してください。</p><div class="voice-field voice-note"><textarea id="projectNote" lang="ja" rows="8" placeholder="例：
-【決定】目隠しフェンスは高さ1.8m、木目ブラウン
-【次回】修正見積を提出
-【確認】隣地境界の位置" maxlength="800"></textarea><button class="voice-btn voice-btn-large" type="button" data-target="projectNote">🎤 話して入力</button></div><small class="voice-hint">長く話しても大丈夫です。保存後は「最新状況」として大きく表示されます。</small></label>
+        <label class="full-field meeting-focus-field"><span class="meeting-focus-title">今回、全員で確認したこと</span><p class="meeting-focus-help">「どこを・どうする」「誰が・いつまでに」を、話すか大きな欄へ入力してください。</p><div class="voice-field voice-note"><textarea id="projectNote" lang="ja" rows="8" placeholder="例：
+【場所】キッチン
+【決定】吊戸棚を撤去し、壁は白で補修
+【業者対応】コンセント位置を確認
+【次回】修正見積を提出" maxlength="800"></textarea><button class="voice-btn voice-btn-large" type="button" data-target="projectNote">🎤 話して入力</button></div><small class="voice-hint">長く話しても大丈夫です。保存後は「最新状況」として大きく表示されます。</small></label>
       </div>
     </details>
 
@@ -103,11 +107,19 @@
   <dialog id="shareDialog" class="share-dialog">
     <form method="dialog" class="dialog-content share-dialog-content">
       <div class="share-heading">
-        <div><span class="share-kicker">送る相手を選ぶ</span><h2>📤 お客様・自分へ送る</h2></div>
+        <div><span class="share-kicker">同じ記録を全員へ</span><h2>📤 誰に送りますか？</h2></div>
         <button class="dialog-close" value="close" aria-label="閉じる">×</button>
       </div>
+
+      <div class="audience-box" aria-label="共有先">
+        <label><input class="audience-check" type="checkbox" value="お客様" checked><span>🏠 お客様</span></label>
+        <label><input class="audience-check" type="checkbox" value="業者" checked><span>👷 業者</span></label>
+        <label><input class="audience-check" type="checkbox" value="社員" checked><span>👥 社員</span></label>
+        <label><input class="audience-check" type="checkbox" value="自分" checked><span>👤 自分</span></label>
+      </div>
+      <p class="audience-help">選んだ相手に、同じ写真・同じ打合せ内容を送ります。</p>
       <button id="nativeShareBtn" class="share-choice recommended" type="button">
-        <span class="share-choice-icon">📱</span><span><strong>画像つきで送る</strong><small>LINE・メール・SMS・Teamsを選べます</small></span><b>おすすめ</b>
+        <span class="share-choice-icon">📱</span><span><strong>写真つきで送る</strong><small>LINE・メール・SMS・Teamsから選択</small></span><b>おすすめ</b>
       </button>
       <div class="share-choice-grid">
         <button id="lineShareBtn" class="share-choice line" type="button"><span class="share-choice-icon">🟢</span><span><strong>LINE</strong><small>文章をLINEで開く</small></span></button>
@@ -125,7 +137,7 @@
   </dialog>
 
   <dialog id="installHelpDialog"><form method="dialog" class="dialog-content install-help-content"><div class="install-icon">📲</div><h2>ホーム画面に追加</h2><div id="installHelpText" class="install-steps"><p><b>1</b> 画面の共有ボタンを押す</p><p><b>2</b> 「ホーム画面に追加」を選ぶ</p><p><b>3</b> 右上の「追加」を押す</p></div><p class="dialog-note">追加すると、次回からReform Hubをアプリのようにすぐ開けます。</p><button class="primary">分かりました</button></form></dialog>
-  <dialog id="helpDialog"><form method="dialog" class="dialog-content"><h2>使い方は3つだけ</h2><div class="help-steps"><p><b>1</b> 写真を撮る</p><p><b>2</b> 指やペンで描く</p><p><b>3</b> 保存・共有する</p></div><button class="primary">分かりました</button></form></dialog>
+  <dialog id="helpDialog"><form method="dialog" class="dialog-content"><h2>使い方は3つだけ</h2><div class="help-steps"><p><b>1</b> 写真を撮る</p><p><b>2</b> 「ここをこうする」と書く</p><p><b>3</b> 打合せ完了を押して全員へ送る</p></div><button class="primary">分かりました</button></form></dialog>
   <dialog id="aiDialog"><form method="dialog" class="dialog-content"><div class="ai-badge">NEXT FEATURE</div><h2>AI提案イメージ</h2><p>写真と手描き指示から完成イメージを作る機能を準備中です。</p><label><span>AIへの指示</span><textarea id="aiPrompt" rows="4" placeholder="例：木目調の目隠しフェンスを設置"></textarea></label><div class="dialog-actions"><button id="savePromptBtn" class="primary" value="cancel" type="button">指示文を保存</button><button value="close">閉じる</button></div></form></dialog>
   <nav class="bottom-nav" aria-label="画面移動">
     <button id="navHomeBtn" type="button"><span>⌂</span>ホーム</button>
