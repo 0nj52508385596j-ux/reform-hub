@@ -6,12 +6,12 @@ const todayEl=$('today');if(todayEl)todayEl.textContent=today.toLocaleDateString
 $('date').value=new Date(Date.now()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
 $('staff').value=localStorage.getItem('rhStaff')||'';
 let deferredPrompt,draw=false,drawMode=false,drawArmedAt=0,strokeMoved=false,timer;
-function toast(t){
+function toast(t,duration=2200){
   clearTimeout(timer);
   const el=$('toast');
   if(!el){console.log(t);return}
   el.textContent=t;el.classList.add('show');
-  timer=setTimeout(()=>el.classList.remove('show'),2200)
+  timer=setTimeout(()=>el.classList.remove('show'),duration)
 }
 function screen(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>screen(b.dataset.go));
@@ -207,7 +207,13 @@ canvas.onpointerup=canvas.onpointercancel=()=>{
 function drawUrl(url){return new Promise(res=>{const im=new Image();im.onload=()=>{canvas.width=im.width;canvas.height=im.height;ctx.drawImage(im,0,0);res()};im.src=url})}
 $('undoBtn').onclick=async()=>{if(state.history.length<2)return;state.history.pop();await drawUrl(state.history.at(-1));toast('一つ戻しました')};
 $('clearBtn').onclick=async()=>{if(!state.base)return;await drawUrl(state.base);state.history=[state.base];if(state.activePhoto>=0)state.photos[state.activePhoto].image=state.base;toast('書いた線を消しました')};
-$('voiceBtn').onclick=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){toast('この端末では音声入力を使えません');return}const r=new SR();r.lang='ja-JP';r.interimResults=false;r.onstart=()=>{$('voiceBtn').textContent='🎤 聞いています…'};r.onresult=e=>{$('note').value+=($('note').value?'\n':'')+e.results[0][0].transcript;draft()};r.onend=()=>{$('voiceBtn').textContent='🎤 話して入力'};r.start()};
+$('voiceBtn').onclick=()=>{
+  const note=$('note');
+  note.focus();
+  const end=note.value.length;
+  try{note.setSelectionRange(end,end)}catch{}
+  toast('🎤 キーボードのマイクを押して、そのまま話してください',6000);
+};
 $('memberBtn').onclick=()=>{fillMembers();$('memberDialog').showModal()};
 function fillMembers(){const m=state.members||{};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>$(k).value=m[k]||'');['customerMethod','vendorMethod','employeeMethod','selfMethod'].forEach(k=>$(k).value=m[k]||({customerMethod:'line',vendorMethod:'andpad',employeeMethod:'teams',selfMethod:'teams'}[k]))}
 $('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','customerPhone','vendorName','vendorEmail','vendorPhone','employeeName','employeeEmail','selfName','selfEmail'].forEach(k=>m[k]=$(k).value.trim());m.customerMethod='line';m.vendorMethod='andpad';m.employeeMethod='teams';m.selfMethod='teams';state.members=m;localStorage.setItem('rhSelf',JSON.stringify({selfName:m.selfName,selfEmail:m.selfEmail}));$('memberDialog').close();draft();toast('共有先を登録しました')};

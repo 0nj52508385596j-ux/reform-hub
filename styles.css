@@ -682,12 +682,21 @@ html.splash-active,html.splash-active body{overflow:hidden}
   font-size:11px;
   letter-spacing:.04em;
 }
+
+
+/* ===== Reform Hub v8.1 / iPad音声入力 ===== */
 #voiceBtn{
   color:#222222 !important;
+  background:#ffffff !important;
+  border:1px solid rgba(17,19,21,.18) !important;
   font-weight:700 !important;
+  cursor:pointer;
 }
-
+#voiceBtn:active{
+  transform:translateY(1px);
+}
 .simple-details > summary{
   color:#222222 !important;
   font-weight:700 !important;
 }
+/* ======================================== */
