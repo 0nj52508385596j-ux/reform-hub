@@ -1,9 +1,13 @@
-# Reform Hub v1.7 最新状況版
-
-物件を開いた瞬間に、最新の打ち合わせ内容を大きく読める版です。
-
-- 「今回の打ち合わせ内容」入力欄を大型化
-- 最新記録を物件の先頭に大きく表示
-- 過去履歴は折りたたんで整理
-- iPad・PC・スマホ対応
-- 音声入力、物件別保存、IndexedDB保存を継続
+{
+  "name": "Reform Hub",
+  "short_name": "Reform Hub",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f6f3",
+  "theme_color": "#17211b",
+  "description": "写真・メモ・共有をひとつにまとめる現場支援アプリ",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}

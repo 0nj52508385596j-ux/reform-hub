@@ -682,18 +682,34 @@ deleteAllBtn.addEventListener('click', async () => {
   }
 });
 
+const installHelpDialog = document.getElementById('installHelpDialog');
+const installHelpText = document.getElementById('installHelpText');
+const homeInstallBtn = document.getElementById('homeInstallBtn');
+
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
   deferredPrompt = event;
-  installBtn.classList.remove('hidden');
 });
-installBtn.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.classList.add('hidden');
-});
+
+async function openInstallGuide() {
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    showToast('すでにホーム画面から使えます');
+    return;
+  }
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    return;
+  }
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (installHelpText) installHelpText.innerHTML = isIOS
+    ? '<p><b>1</b> Safari下部または上部の共有ボタン「□↑」を押す</p><p><b>2</b> 「ホーム画面に追加」を選ぶ</p><p><b>3</b> 右上の「追加」を押す</p>'
+    : '<p><b>1</b> ブラウザのメニュー「︙」を押す</p><p><b>2</b> 「アプリをインストール」または「ホーム画面に追加」を選ぶ</p><p><b>3</b> 「追加」を押す</p>';
+  installHelpDialog?.showModal();
+}
+installBtn?.addEventListener('click', openInstallGuide);
+homeInstallBtn?.addEventListener('click', openInstallGuide);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
@@ -813,3 +829,27 @@ imageInput?.addEventListener('change', () => setTimeout(() => document.getElemen
 
   stopVoiceBtn?.addEventListener('click', stop);
 })();
+
+
+// v2.0 ホーム画面と固定ナビ
+const homeDate = document.getElementById('homeDate');
+const homeNewProjectBtn = document.getElementById('homeNewProjectBtn');
+const bottomImageInput = document.getElementById('bottomImageInput');
+const navHomeBtn = document.getElementById('navHomeBtn');
+const navProjectsBtn = document.getElementById('navProjectsBtn');
+const navShareBtn = document.getElementById('navShareBtn');
+if (homeDate) homeDate.textContent = new Date().toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric', weekday:'long'});
+homeNewProjectBtn?.addEventListener('click', () => {
+  resetProject(Boolean(baseImageData || projectName.value.trim() || projectNote.value.trim()));
+  document.querySelector('.details-card')?.setAttribute('open','');
+  document.querySelector('.details-card')?.scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(() => projectName.focus(), 420);
+});
+bottomImageInput?.addEventListener('change', () => {
+  const file = bottomImageInput.files?.[0];
+  if (file) loadImageFile(file).then(() => document.getElementById('workspaceSection')?.scrollIntoView({behavior:'smooth'}));
+  bottomImageInput.value = '';
+});
+navHomeBtn?.addEventListener('click', () => document.getElementById('homeDashboard')?.scrollIntoView({behavior:'smooth', block:'start'}));
+navProjectsBtn?.addEventListener('click', () => document.getElementById('projectsSection')?.scrollIntoView({behavior:'smooth', block:'start'}));
+navShareBtn?.addEventListener('click', () => shareDialog?.showModal());

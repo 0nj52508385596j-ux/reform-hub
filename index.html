@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#17211b" />
   <meta name="description" content="写真を撮る、描く、見せる。誰でも迷わず使えるリフォーム提案ツール" />
-  <title>Reform Hub｜お客様とTeamsへかんたん共有</title>
+  <title>Reform Hub｜現場をすぐ始める</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -15,22 +15,27 @@
       <div class="brand-logo" aria-hidden="true"><span></span></div>
       <div><h1>Reform Hub</h1><p class="subtitle">撮る・描く・見せる</p></div>
     </div>
-    <div class="header-actions"><button id="soundToggleBtn" class="ghost sound-toggle" type="button" aria-pressed="true">🔊 操作音 ON</button><button id="installBtn" class="ghost hidden" type="button">ホーム画面に追加</button></div>
+    <div class="header-actions"><button id="soundToggleBtn" class="ghost sound-toggle" type="button" aria-pressed="true">🔊 操作音 ON</button><button id="installBtn" class="ghost install-visible" type="button">＋ ホーム画面に追加</button></div>
   </header>
 
   <main class="container simple-container">
-    <section class="start-card" aria-label="はじめる">
-      <p class="start-kicker">まず、ここを押してください</p>
-      <label class="mega-photo-button">
-        <input id="imageInput" type="file" accept="image/*" capture="environment" />
-        <span class="mega-icon">📷</span>
-        <strong>写真を撮る・選ぶ</strong>
-        <small>現場ではここから開始</small>
-      </label>
-      <div class="quick-actions">
-        <button id="showProjectsBtn" type="button">📁 保存した案件</button>
-        <button id="helpBtn" type="button">？ 使い方</button>
+    <section class="home-dashboard" id="homeDashboard" aria-label="ホーム">
+      <div class="home-welcome">
+        <p id="homeDate" class="home-date"></p>
+        <h2>今日の現場を、すぐ始める</h2>
+        <p>写真・メモ・共有を、ひとつの場所に。</p>
       </div>
+      <button id="homeNewProjectBtn" class="home-new-project" type="button"><span>＋</span><strong>新しい現場を追加</strong><small>物件名と打ち合わせを新しく始めます</small></button>
+      <div class="home-grid">
+        <label class="home-photo-button">
+          <input id="imageInput" type="file" accept="image/*" capture="environment" />
+          <span>📷</span><strong>写真から始める</strong><small>撮影・画像選択</small>
+        </label>
+        <button id="quickMemoBtn" class="home-mini-card" type="button"><span>🎤</span><strong>メモから始める</strong><small>写真なしでも保存</small></button>
+        <button id="showProjectsBtn" class="home-mini-card" type="button"><span>📁</span><strong>保存した案件</strong><small>続き・履歴を見る</small></button>
+        <button id="homeInstallBtn" class="home-mini-card install-card" type="button"><span>📲</span><strong>ホーム画面に追加</strong><small>アプリのように開く</small></button>
+      </div>
+      <button id="helpBtn" class="home-help" type="button">？ はじめての方へ：使い方を見る</button>
     </section>
 
     <section class="card workspace-card" id="workspaceSection" aria-labelledby="photoHeading">
@@ -119,8 +124,15 @@
     </form>
   </dialog>
 
+  <dialog id="installHelpDialog"><form method="dialog" class="dialog-content install-help-content"><div class="install-icon">📲</div><h2>ホーム画面に追加</h2><div id="installHelpText" class="install-steps"><p><b>1</b> 画面の共有ボタンを押す</p><p><b>2</b> 「ホーム画面に追加」を選ぶ</p><p><b>3</b> 右上の「追加」を押す</p></div><p class="dialog-note">追加すると、次回からReform Hubをアプリのようにすぐ開けます。</p><button class="primary">分かりました</button></form></dialog>
   <dialog id="helpDialog"><form method="dialog" class="dialog-content"><h2>使い方は3つだけ</h2><div class="help-steps"><p><b>1</b> 写真を撮る</p><p><b>2</b> 指やペンで描く</p><p><b>3</b> 保存・共有する</p></div><button class="primary">分かりました</button></form></dialog>
   <dialog id="aiDialog"><form method="dialog" class="dialog-content"><div class="ai-badge">NEXT FEATURE</div><h2>AI提案イメージ</h2><p>写真と手描き指示から完成イメージを作る機能を準備中です。</p><label><span>AIへの指示</span><textarea id="aiPrompt" rows="4" placeholder="例：木目調の目隠しフェンスを設置"></textarea></label><div class="dialog-actions"><button id="savePromptBtn" class="primary" value="cancel" type="button">指示文を保存</button><button value="close">閉じる</button></div></form></dialog>
+  <nav class="bottom-nav" aria-label="画面移動">
+    <button id="navHomeBtn" type="button"><span>⌂</span>ホーム</button>
+    <label><input id="bottomImageInput" type="file" accept="image/*" capture="environment" /><span>📷</span>写真</label>
+    <button id="navProjectsBtn" type="button"><span>📁</span>案件</button>
+    <button id="navShareBtn" type="button"><span>📤</span>送る</button>
+  </nav>
   <script src="app.js"></script>
 </body>
 </html>
