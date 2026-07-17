@@ -1,10 +1,10 @@
 {
-  "name": "Reform Hub v5.2 — Five Photo Day",
+  "name": "Reform Hub v6.0 — FIELD MODE",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#FAFAF8",
-  "theme_color": "#FAFAF8",
+  "background_color": "#111315",
+  "theme_color": "#111315",
   "icons": [
     {
       "src": "icon-192.png",
@@ -17,5 +17,5 @@
       "type": "image/png"
     }
   ],
-  "description": "1物件・1日につき最大5枚の写真へ手書きメモを残し、まとめて共有する現場カルテ"
+  "description": "撮る・描く・伝わる。最大5枚の現場写真へ手書きし共有する現場カルテ"
 }
