@@ -1,38 +1,58 @@
-/* CAINZ365 FIELD v8.0.2 - Text Visibility Fix */
-/* styles.css の最後に追加 */
+/* =========================================================
+   CAINZ365 FIELD v8.0.2
+   白背景 × 白文字 修正パッチ
+   styles.css の一番最後へ追加してください。
+   ========================================================= */
 
-/* 白文字が背景と被る箇所を調整 */
-.sidebar p,
-.sidebar small,
-.how-to-use,
-.description,
-.helper-text{
-  color:#D6DADF !important;
+/* 「話して入力」ボタン：白背景には濃い文字 */
+.note-box button,
+#voiceBtn {
+  background: #FFFFFF !important;
+  color: #2F3438 !important;
+  border-color: #D7DCE0 !important;
+  opacity: 1 !important;
+  font-weight: 600 !important;
 }
 
-/* ラベル */
-label,
-.section-title{
-  color:#F2F4F7 !important;
-  font-weight:600;
+/* 音声認識中も読みやすくする */
+#voiceBtn:active,
+#voiceBtn:focus-visible {
+  background: #F3F0EA !important;
+  color: #111315 !important;
 }
 
-/* プレースホルダー */
-input::placeholder,
-textarea::placeholder{
-  color:#AEB4BB !important;
-  opacity:1;
+/* 「物件名・日付などを確認する」：白背景には濃い文字 */
+.simple-details,
+.simple-details summary {
+  background: #FFFFFF !important;
+  color: #2F3438 !important;
+  opacity: 1 !important;
 }
 
-/* ボタン補助文字 */
-button small{
-  color:#F5F5F5 !important;
-  opacity:1;
+.simple-details summary {
+  font-weight: 600 !important;
 }
 
-/* 写真説明 */
-.photo-caption,
-.photo-thumb small{
-  color:#ECEFF1 !important;
-  font-size:13px;
+/* 詳細を開いた後のラベル・入力文字 */
+.simple-details .fields label {
+  color: #4F565C !important;
+}
+
+.simple-details .fields input,
+.simple-details .fields select {
+  background: #FFFFFF !important;
+  color: #2F3438 !important;
+  border-color: #D7DCE0 !important;
+}
+
+/* 白い入力欄の入力例は、薄すぎないグレー */
+.simple-details input::placeholder {
+  color: #737A80 !important;
+  opacity: 1 !important;
+}
+
+/* 以前の視認性パッチによる button small の全体指定を局所的に打ち消す */
+.note-box button small,
+.simple-details summary small {
+  color: inherit !important;
 }
