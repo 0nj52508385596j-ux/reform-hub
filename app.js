@@ -243,3 +243,17 @@ $('importInput').onchange=async e=>{try{const j=JSON.parse(await e.target.files[
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e});$('installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null}else alert('iPadではSafariの共有ボタンを押し、「ホーム画面に追加」を選んでください。')};
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 (async()=>{try{const d=JSON.parse(localStorage.getItem('rhDraft')||'null');if(d){state.id=d.id||null;state.members=d.members||{};state.sendHistory=d.sendHistory||{};$('projectName').value=d.propertyName||'';$('area').value=d.workArea||'家全体';$('date').value=d.date||$('date').value;$('staff').value=d.staff||$('staff').value;$('note').value=d.note||'';syncName()}const self=JSON.parse(localStorage.getItem('rhSelf')||'{}');state.members.selfName=state.members.selfName||self.selfName||'';state.members.selfEmail=state.members.selfEmail||self.selfEmail||'';await refreshHome()}catch(e){console.error(e)}})();
+
+
+// v5.0 desktop navigation helpers
+const sideNewBtn=document.getElementById('sideNewBtn');
+const sideProjectsBtn=document.getElementById('sideProjectsBtn');
+if(sideNewBtn) sideNewBtn.onclick=()=>document.getElementById('newProjectBtn').click();
+if(sideProjectsBtn) sideProjectsBtn.onclick=()=>document.getElementById('listBtn').click();
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+    item.classList.add('active');
+  });
+});

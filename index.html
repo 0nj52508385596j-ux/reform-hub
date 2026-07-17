@@ -3,38 +3,81 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#F4F2E9">
-  <title>Reform Hub v4.1｜現場を、美しく残す。</title>
+  <meta name="theme-color" content="#FAFAF8">
+  <title>Reform Hub v5｜Quiet Architecture</title>
   <meta name="description" content="住宅リフォームの打合せを写真・手書き・メモで記録し、お客様・業者・社員・自分へ一人ずつ確実に共有する現場カルテ">
   <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header>
+<header class="app-sidebar">
   <div class="brand">
-      <span class="logo"><b>R</b><i></i></span>
-      <div><h1>Reform Hub</h1><p>GENBA NOTE</p></div>
-    </div>
-  <button id="installBtn" class="quiet">＋ ホーム画面に追加</button>
+    <span class="logo" aria-hidden="true">
+      <svg viewBox="0 0 48 48"><path d="M8 21.5 24 8l16 13.5V40H29V28H19v12H8Z"/></svg>
+    </span>
+    <div><h1>Reform Hub</h1><p>by CAINZ365</p></div>
+  </div>
+
+  <nav class="side-nav" aria-label="メインメニュー">
+    <button class="nav-item active" data-go="home">
+      <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v9H6v-9"/><path d="M9 20v-6h6v6"/></svg><span>ホーム</span>
+    </button>
+    <button class="nav-item" id="sideProjectsBtn">
+      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>物件一覧</span>
+    </button>
+    <button class="nav-item" id="sideNewBtn">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>新しい打合せ</span>
+    </button>
+    <button class="nav-item" data-go="projects">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-5-5L5 19"/></svg><span>写真ライブラリ</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-note">
+    <p>いい提案は、<br>いい準備から。</p>
+    <span class="wood-lines" aria-hidden="true"></span>
+  </div>
+
+  <button id="installBtn" class="install-link">ホーム画面に追加</button>
 </header>
 
 <main>
   <section id="home" class="screen active">
-    <div class="hero">
-      <div class="hero-copy">
+    <div class="home-topbar">
+      <button class="mobile-menu" aria-label="メニュー"><span></span><span></span><span></span></button>
+      <div class="home-greeting">
+        <h2>おはようございます。</h2>
         <p id="today"></p>
-        <span class="hero-label">REFORM FIELD RECORD</span>
-        <h2>今日は、<br>どの物件ですか？</h2>
-        <p class="hero-sub">写真と手書きで、打合せを<br>やさしく、確かに残します。</p>
-        <button id="newProjectBtn" class="big primary"><b>＋</b><span>新しい物件</span></button>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <span class="sun"></span>
-        <span class="house"></span>
-        <span class="leaf leaf-a"></span>
-        <span class="leaf leaf-b"></span>
+      <button id="newProjectBtn" class="top-cta">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        新しい打合せ
+      </button>
+    </div>
+
+    <div class="hero">
+      <div class="hero-overlay">
+        <p>自然と調和する提案は、<br>暮らしを豊かにします。</p>
+        <span>REFORM FIELD RECORD</span>
+      </div>
+      <div class="architecture-art" aria-hidden="true">
+        <div class="stone"></div>
+        <div class="glass"></div>
+        <div class="wood-slat"></div>
+        <div class="tree-line"></div>
       </div>
     </div>
+
+    <section class="home-intro">
+      <div>
+        <span class="section-kicker">TODAY</span>
+        <h3>写真から、今日の打合せを始める。</h3>
+      </div>
+      <p>写真・手書き・メモをひとつにまとめ、相手ごとに確実に共有します。</p>
+    </section>
 
     <div id="currentWrap" class="current-card hidden">
       <p>今の物件</p>
@@ -43,7 +86,10 @@
       <button id="continueBtn" class="big dark">続きから開く</button>
     </div>
 
-    <button id="listBtn" class="wide-button"><span>📁</span><div><strong>これまでの物件</strong><small>写真と打合せを物件名から探す</small></div><b>›</b></button>
+    <button id="listBtn" class="wide-button">
+  <span class="line-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg></span>
+  <div><strong>これまでの物件</strong><small>写真と打合せを物件名から探す</small></div><b>›</b>
+</button>
   </section>
 
   <section id="work" class="screen">
@@ -53,14 +99,14 @@
 
     <label class="camera-button">
       <input id="photoInput" type="file" accept="image/*" capture="environment">
-      <span>📷</span><strong>写真を撮る・選ぶ</strong><small>キッチン・浴室・内装・外壁・外構など、どの工事でも使えます</small>
+      <span class="camera-line"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg></span><strong>写真を撮る・選ぶ</strong><small>キッチン・浴室・内装・外壁・外構など、どの工事でも使えます</small>
     </label>
 
     <div class="canvas-box" id="canvasBox">
       <canvas id="canvas" width="1200" height="800"></canvas>
-      <div id="viewBadge" class="mode-badge">🔒 見るモード</div><div class="photo-first-badge">PHOTO NOTE</div>
+      <div id="viewBadge" class="mode-badge">見るモード</div><div class="photo-first-badge">PHOTO FIRST</div>
       <button id="startDrawBtn" class="draw-start" type="button"><span>✎</span> 写真に書く</button>
-      <div id="empty"><span>🏠</span><strong>まず写真を撮ってください</strong><small>写真なしでメモだけ残すこともできます</small></div>
+      <div id="empty"><span class="empty-house"><svg viewBox="0 0 48 48"><path d="M7 23 24 9l17 14v16H29V28H19v11H7Z"/></svg></span><strong>まず写真を撮ってください</strong><small>写真なしでメモだけ残すこともできます</small></div>
     </div>
 
     <div class="drawbar hidden" id="drawbar">
@@ -73,7 +119,7 @@
       <button id="finishDrawBtn" class="finish-draw" type="button">✓ 書き込み終了</button>
     </div>
 
-    <label class="note-box"><span>今回、全員で確認したこと</span><textarea id="note" rows="6" placeholder="例：キッチンの吊戸棚は撤去。壁は白で補修。コンセント位置は業者が確認。"></textarea><button id="voiceBtn" type="button">🎤 話して入力</button></label>
+    <label class="note-box"><span>今回、全員で確認したこと</span><textarea id="note" rows="6" placeholder="例：キッチンの吊戸棚は撤去。壁は白で補修。コンセント位置は業者が確認。"></textarea><button id="voiceBtn" type="button">話して入力</button></label>
 
     <details class="simple-details">
       <summary>物件名・日付などを確認する</summary>
