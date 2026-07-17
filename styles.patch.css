@@ -1,0 +1,71 @@
+/* ===================================================
+CAINZ365 FIELD v8.0.2
+視認性アップデート PATCH
+styles.css の一番最後へ追加してください。
+=================================================== */
+
+/* 全体の可読性向上 */
+body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ヒーロー説明 */
+.field-hero p{
+  color:#F2F2F2 !important;
+}
+
+/* サイドバー説明 */
+.field-brand p,
+.field-note small,
+.install-link{
+  color:#D8DDE1 !important;
+}
+
+/* サイドバーコピー */
+.field-note p{
+  color:#FFFFFF !important;
+}
+
+/* 小さな説明 */
+small,
+.field-empty-guide small,
+.album-head small,
+.note-box span,
+.photo-caption-box span,
+.autosave{
+  color:#E6E9EC !important;
+}
+
+/* TODAY / HOW TO USE */
+.field-section-head span,
+.field-empty-guide span{
+  color:#FFFFFF !important;
+  letter-spacing:.12em;
+}
+
+/* 入力欄タイトル */
+.fields label,
+.note-box>span,
+.photo-caption-box span{
+  font-weight:600 !important;
+}
+
+/* 完了ボタン */
+.finish small{
+  opacity:1 !important;
+  color:#FFFFFF !important;
+}
+
+/* 写真説明 */
+.photo-thumb small{
+  font-size:13px !important;
+  font-weight:600 !important;
+  color:#FFFFFF !important;
+}
+
+/* プレースホルダー */
+::placeholder{
+  color:#BFC6CC;
+  opacity:1;
+}
