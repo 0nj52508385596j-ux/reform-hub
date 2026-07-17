@@ -568,3 +568,8 @@ main,.screen{background:var(--field-bg)!important}
   .field-flow h3{font-size:17px}
   .field-today{padding:35px 20px 76px}
 }
+
+.field-start,[data-action="new-project"]{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.field-start:active,[data-action="new-project"]:active{transform:translateY(2px);filter:brightness(.94)}
+.field-start:focus-visible,[data-action="new-project"]:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.home-action-status{min-height:16px;margin-top:8px;color:#FFB27A;font-size:11px}

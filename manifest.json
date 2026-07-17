@@ -1,5 +1,5 @@
 {
-  "name": "Reform Hub v6.0 — FIELD MODE",
+  "name": "Reform Hub v7.0 — FIELD MODE PRO",
   "short_name": "Reform Hub",
   "start_url": "./",
   "display": "standalone",
@@ -17,5 +17,5 @@
       "type": "image/png"
     }
   ],
-  "description": "撮る・描く・伝わる。最大5枚の現場写真へ手書きし共有する現場カルテ"
+  "description": "撮る・描く・伝わる。開始導線を修正した現場カルテ"
 }

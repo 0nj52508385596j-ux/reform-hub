@@ -22,7 +22,7 @@
   <nav class="side-nav" aria-label="メインメニュー">
     <button class="nav-item active" data-go="home"><b>01</b><span>ホーム</span></button>
     <button class="nav-item" id="sideProjectsBtn"><b>02</b><span>現場一覧</span></button>
-    <button class="nav-item" id="sideNewBtn"><b>03</b><span>新しい現場</span></button>
+    <button class="nav-item" id="sideNewBtn" data-action="new-project"><b>03</b><span>新しい現場</span></button>
     <button class="nav-item" data-go="projects"><b>04</b><span>写真記録</span></button>
   </nav>
 
@@ -46,10 +46,10 @@
       <span class="field-kicker">現場カルテ</span>
       <h2>撮る。<br>描く。<br><em>伝わる。</em></h2>
       <p>現場写真にその場で書き込み、最大5枚をひとつの記録として共有するアプリです。</p>
-      <button id="newProjectBtn" class="field-start">
+      <button id="newProjectBtn" class="field-start" data-action="new-project">
         <span class="field-plus">＋</span>
         <span><strong>新しい現場を始める</strong><small>まずは写真を撮影</small></span>
-      </button>
+      </button><div id="homeActionStatus" class="home-action-status" role="status"></div>
     </div>
   </div>
 

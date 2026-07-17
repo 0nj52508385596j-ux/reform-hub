@@ -42,7 +42,12 @@ function draft(){localStorage.setItem('rhDraft',JSON.stringify({...fields(),id:s
 ['projectName','area','date','staff','note','photoCaption'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='projectName')syncName();if(id==='photoCaption'&&state.activePhoto>=0)state.photos[state.activePhoto].caption=$('photoCaption').value;draft()}));
 function syncName(){$('workName').textContent=$('projectName').value.trim()||'新しい現場カルテ'}
 async function refreshHome(){const p=await all();if(p[0]){$('currentWrap').classList.remove('hidden');$('currentName').textContent=p[0].propertyName;$('currentUpdated').textContent='最終更新 '+new Date(p[0].updatedAt).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});$('continueBtn').onclick=()=>load(p[0])}else $('currentWrap').classList.add('hidden')}
-$('newProjectBtn').onclick=()=>{$('newName').value='';$('newDialog').showModal()};
+function startNewProject(){
+  reset();
+  screen('work');
+  setTimeout(()=>document.getElementById('projectName')?.focus(),80);
+}
+$('newProjectBtn').onclick=startNewProject;
 $('createBtn').onclick=()=>{reset();$('projectName').value=$('newName').value.trim()||'新しい現場カルテ';syncName();$('newDialog').close();screen('work');setTimeout(()=>$('memberDialog').showModal(),300)};
 $('listBtn').onclick=async()=>{await render();screen('projects')};
 function reset(){
@@ -442,7 +447,7 @@ if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch((
 // v5.0 desktop navigation helpers
 const sideNewBtn=document.getElementById('sideNewBtn');
 const sideProjectsBtn=document.getElementById('sideProjectsBtn');
-if(sideNewBtn) sideNewBtn.onclick=()=>document.getElementById('newProjectBtn').click();
+if(sideNewBtn) sideNewBtn.onclick=startNewProject;
 if(sideProjectsBtn) sideProjectsBtn.onclick=()=>document.getElementById('listBtn').click();
 
 document.querySelectorAll('.nav-item').forEach(item=>{
@@ -450,4 +455,12 @@ document.querySelectorAll('.nav-item').forEach(item=>{
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
     item.classList.add('active');
   });
+});
+
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-action="new-project"]');
+  if(!el)return;
+  if(el.id==='newProjectBtn'||el.id==='sideNewBtn')return;
+  e.preventDefault();
+  startNewProject();
 });
