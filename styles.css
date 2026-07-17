@@ -135,3 +135,16 @@
   color:#274337;
   border:1px solid #d7e0db;
 }
+
+
+/* v2.6 送るボタンを一つに統一 */
+.recipient-card .send-photo{
+  min-height:64px;
+  font-size:1.08rem;
+}
+.recipient-card .send-small{
+  display:none !important;
+}
+.recipient-card .recipient-time{
+  font-weight:700;
+}

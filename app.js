@@ -44,15 +44,15 @@ function historyEntry(value){
   if(typeof value==='string')return {openedAt:value};
   return value;
 }
-async function markOpened(p,key,method='共有'){
+async function markOpened(p,key){
   const stamp=new Date().toISOString();
   const old=historyEntry((p.sendHistory||{})[key]);
-  p.sendHistory={...(p.sendHistory||{}),[key]:{...old,openedAt:stamp,method}};
+  p.sendHistory={...(p.sendHistory||{}),[key]:{...old,openedAt:stamp}};
   state.sendHistory=p.sendHistory;
   p.updatedAt=new Date().toISOString();
   await put(p);
   await refreshHome();
-  localStorage.setItem('rhPendingShare',JSON.stringify({projectId:p.id,key,method,openedAt:stamp}));
+  localStorage.setItem('rhPendingShare',JSON.stringify({projectId:p.id,key,openedAt:stamp}));
   return stamp;
 }
 async function markConfirmed(p,key){
@@ -93,7 +93,7 @@ function recipientText(p,role){
   }[role]||'打合せ記録をお送りします。';
   return `${lead}\n\n${shareText(p)}`;
 }
-async function shareWithPhoto(p,role,label){
+async function sendToPerson(p,role,label){
   try{
     const data={title:`${p.propertyName} 打合せ記録`,text:recipientText(p,role)};
     if(p.image){
@@ -101,17 +101,23 @@ async function shareWithPhoto(p,role,label){
       const file=new File([blob],`${p.propertyName}-打合せ.jpg`,{type:'image/jpeg'});
       if(navigator.canShare?.({files:[file]}))data.files=[file];
     }
-    await markOpened(p,role,'写真つき共有');
-    await navigator.share(data);
-    toast(`${label}への共有画面を開きました`);
-    setTimeout(showPendingConfirm,400);
+    await markOpened(p,role);
+    if(navigator.share){
+      await navigator.share(data);
+      toast(`${label}への送る画面を開きました`);
+      setTimeout(showPendingConfirm,400);
+    }else{
+      await navigator.clipboard?.writeText(recipientText(p,role));
+      toast('文章をコピーしました。送るアプリに貼り付けてください');
+      setTimeout(showPendingConfirm,400);
+    }
   }catch(e){
     if(e.name==='AbortError'){
       localStorage.removeItem('rhPendingShare');
     }else{
-      await navigator.clipboard?.writeText(recipientText(p,role));
+      try{await navigator.clipboard?.writeText(recipientText(p,role))}catch{}
       toast('文章をコピーしました');
-      localStorage.removeItem('rhPendingShare');
+      setTimeout(showPendingConfirm,400);
     }
   }
 }
@@ -138,30 +144,9 @@ async function openShare(p,reopen=false){
     const statusClass=confirmed?'sent':opened?'waiting':'unsent';
     const when=confirmed?h.confirmedAt:h.openedAt;
     const timeText=when?new Date(when).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${r.email||r.phone||'送り先未登録'}</small></div><span class="${statusClass}">${status}</span></div><div class="recipient-time">${timeText}${h.method?'　'+esc(h.method):''}</div><button class="send-photo">📤 この人へ写真つきで送る</button><div class="send-small"></div>${opened&&!confirmed?'<button class="manual-confirm">✓ 送りました</button>':''}`;
-    card.querySelector('.send-photo').onclick=()=>shareWithPhoto(p,r.key,r.role);
-    const small=card.querySelector('.send-small');
-    if(r.email){
-      const b=document.createElement('button');b.textContent='✉️ メールで送る';
-      b.onclick=async()=>{
-        await markOpened(p,r.key,'メール');
-        location.href=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(recipientText(p,r.key))}`;
-      };
-      small.appendChild(b);
-    }
-    if(r.phone){
-      const b=document.createElement('button');b.textContent='💬 SMSで送る';
-      b.onclick=async()=>{
-        await markOpened(p,r.key,'SMS');
-        location.href=`sms:${r.phone}?body=${encodeURIComponent(recipientText(p,r.key))}`;
-      };
-      small.appendChild(b);
-    }
-    if(!r.email&&!r.phone){
-      const b=document.createElement('button');b.textContent='送る相手を登録する';
-      b.onclick=()=>{$('shareDialog').close();fillMembers();$('memberDialog').showModal()};
-      small.appendChild(b);
-    }
+    const contact=r.email||r.phone||'送り先は共有画面で選びます';
+    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${esc(contact)}</small></div><span class="${statusClass}">${status}</span></div><div class="recipient-time">${timeText}</div><button class="send-photo">📤 この人へ送る</button>${opened&&!confirmed?'<button class="manual-confirm">✓ 送りました</button>':''}`;
+    card.querySelector('.send-photo').onclick=()=>sendToPerson(p,r.key,r.role);
     const manual=card.querySelector('.manual-confirm');
     if(manual)manual.onclick=async()=>{await markConfirmed(p,r.key);toast(`${r.role}を確認済みにしました`);await openShare(p,true)};
     box.appendChild(card);
