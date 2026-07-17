@@ -39,14 +39,50 @@ $('saveMembersBtn').onclick=()=>{const m={};['customerName','customerEmail','cus
 $('finishBtn').onclick=async()=>{if(!$('projectName').value.trim()){toast('物件名を入れてください');$('projectName').focus();return}const p=fields();state.id=p.id;state.updatedAt=p.updatedAt;localStorage.setItem('rhStaff',p.staff);await put(p);localStorage.removeItem('rhDraft');await refreshHome();openShare(p);toast('この端末に保存しました')};
 function shareText(p){return `【Reform Hub 打合せ記録】\n物件：${p.propertyName}\n日付：${p.date||''}\n場所：${p.workArea||''}\n\n確認したこと\n${p.note||'写真をご確認ください'}\n\n担当：${p.staff||''}`}
 function blobFromData(url){return fetch(url).then(r=>r.blob())}
-async function markOpened(p,key){
+function historyEntry(value){
+  if(!value)return {};
+  if(typeof value==='string')return {openedAt:value};
+  return value;
+}
+async function markOpened(p,key,method='共有'){
   const stamp=new Date().toISOString();
-  p.sendHistory={...(p.sendHistory||{}),[key]:stamp};
+  const old=historyEntry((p.sendHistory||{})[key]);
+  p.sendHistory={...(p.sendHistory||{}),[key]:{...old,openedAt:stamp,method}};
   state.sendHistory=p.sendHistory;
   p.updatedAt=new Date().toISOString();
   await put(p);
   await refreshHome();
+  localStorage.setItem('rhPendingShare',JSON.stringify({projectId:p.id,key,method,openedAt:stamp}));
   return stamp;
+}
+async function markConfirmed(p,key){
+  const stamp=new Date().toISOString();
+  const old=historyEntry((p.sendHistory||{})[key]);
+  p.sendHistory={...(p.sendHistory||{}),[key]:{...old,confirmedAt:stamp}};
+  state.sendHistory=p.sendHistory;
+  p.updatedAt=new Date().toISOString();
+  await put(p);
+  await refreshHome();
+  localStorage.removeItem('rhPendingShare');
+  return stamp;
+}
+function recipientLabel(key){
+  return {customer:'お客様',vendor:'業者',employee:'社員',self:'自分'}[key]||'相手';
+}
+let pendingConfirm=null;
+async function showPendingConfirm(){
+  if(document.visibilityState==='hidden'||$('confirmSentDialog').open)return;
+  let pending;
+  try{pending=JSON.parse(localStorage.getItem('rhPendingShare')||'null')}catch{}
+  if(!pending)return;
+  const projects=await all();
+  const p=projects.find(x=>x.id===pending.projectId);
+  if(!p){localStorage.removeItem('rhPendingShare');return}
+  const h=historyEntry((p.sendHistory||{})[pending.key]);
+  if(h.confirmedAt){localStorage.removeItem('rhPendingShare');return}
+  pendingConfirm={p,key:pending.key};
+  $('confirmSentWho').textContent=`${recipientLabel(pending.key)}への送信`;
+  $('confirmSentDialog').showModal();
 }
 function recipientText(p,role){
   const lead={
@@ -65,18 +101,23 @@ async function shareWithPhoto(p,role,label){
       const file=new File([blob],`${p.propertyName}-打合せ.jpg`,{type:'image/jpeg'});
       if(navigator.canShare?.({files:[file]}))data.files=[file];
     }
+    await markOpened(p,role,'写真つき共有');
     await navigator.share(data);
-    await markOpened(p,role);
     toast(`${label}への共有画面を開きました`);
-    await openShare(p,true);
+    setTimeout(showPendingConfirm,400);
   }catch(e){
-    if(e.name!=='AbortError'){
+    if(e.name==='AbortError'){
+      localStorage.removeItem('rhPendingShare');
+    }else{
       await navigator.clipboard?.writeText(recipientText(p,role));
       toast('文章をコピーしました');
+      localStorage.removeItem('rhPendingShare');
     }
   }
 }
 async function openShare(p,reopen=false){
+  const fresh=(await all()).find(x=>x.id===p.id)||p;
+  p=fresh;
   $('shareProjectName').textContent=p.propertyName+'／'+(p.date||'');
   const m=p.members||{}, history=p.sendHistory||{};
   const box=$('recipientButtons');box.innerHTML='';
@@ -86,21 +127,34 @@ async function openShare(p,reopen=false){
     {key:'employee',icon:'👥',role:'社員',name:m.employeeName,email:m.employeeEmail,phone:''},
     {key:'self',icon:'👤',role:'自分',name:m.selfName,email:m.selfEmail,phone:''}
   ];
+  let complete=0;
   rec.forEach(r=>{
     const card=document.createElement('section');card.className='recipient-card';
-    const sent=history[r.key];
-    const when=sent?new Date(sent).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'未送信';
-    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${r.email||r.phone||'送り先未登録'}</small></div><span class="${sent?'sent':'unsent'}">${sent?'✓ 送信画面を開いた':'未送信'}</span></div><div class="recipient-time">${sent?when:''}</div><button class="send-photo">📤 この人へ写真つきで送る</button><div class="send-small"></div>`;
+    const h=historyEntry(history[r.key]);
+    const confirmed=!!h.confirmedAt;
+    const opened=!!h.openedAt;
+    if(confirmed)complete++;
+    const status=confirmed?'✓ 確認済み':opened?'確認待ち':'未確認';
+    const statusClass=confirmed?'sent':opened?'waiting':'unsent';
+    const when=confirmed?h.confirmedAt:h.openedAt;
+    const timeText=when?new Date(when).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    card.innerHTML=`<div class="recipient-head"><div><strong>${r.icon} ${r.role}${r.name?'　'+esc(r.name):''}</strong><small>${r.email||r.phone||'送り先未登録'}</small></div><span class="${statusClass}">${status}</span></div><div class="recipient-time">${timeText}${h.method?'　'+esc(h.method):''}</div><button class="send-photo">📤 この人へ写真つきで送る</button><div class="send-small"></div>${opened&&!confirmed?'<button class="manual-confirm">✓ 送りました</button>':''}`;
     card.querySelector('.send-photo').onclick=()=>shareWithPhoto(p,r.key,r.role);
     const small=card.querySelector('.send-small');
     if(r.email){
       const b=document.createElement('button');b.textContent='✉️ メールで送る';
-      b.onclick=async()=>{await markOpened(p,r.key);location.href=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(recipientText(p,r.key))}`};
+      b.onclick=async()=>{
+        await markOpened(p,r.key,'メール');
+        location.href=`mailto:${encodeURIComponent(r.email)}?subject=${encodeURIComponent('【Reform Hub】'+p.propertyName+' 打合せ記録')}&body=${encodeURIComponent(recipientText(p,r.key))}`;
+      };
       small.appendChild(b);
     }
     if(r.phone){
       const b=document.createElement('button');b.textContent='💬 SMSで送る';
-      b.onclick=async()=>{await markOpened(p,r.key);location.href=`sms:${r.phone}?body=${encodeURIComponent(recipientText(p,r.key))}`};
+      b.onclick=async()=>{
+        await markOpened(p,r.key,'SMS');
+        location.href=`sms:${r.phone}?body=${encodeURIComponent(recipientText(p,r.key))}`;
+      };
       small.appendChild(b);
     }
     if(!r.email&&!r.phone){
@@ -108,10 +162,32 @@ async function openShare(p,reopen=false){
       b.onclick=()=>{$('shareDialog').close();fillMembers();$('memberDialog').showModal()};
       small.appendChild(b);
     }
+    const manual=card.querySelector('.manual-confirm');
+    if(manual)manual.onclick=async()=>{await markConfirmed(p,r.key);toast(`${r.role}を確認済みにしました`);await openShare(p,true)};
     box.appendChild(card);
   });
+  const finish=$('finishShareBtn');
+  finish.textContent=complete===4?'✓ 全員の確認が完了':'送る作業を終える';
+  finish.classList.toggle('complete',complete===4);
   if(!reopen||!$('shareDialog').open)$('shareDialog').showModal();
 }
+$('confirmSentYes').onclick=async()=>{
+  if(!pendingConfirm)return;
+  await markConfirmed(pendingConfirm.p,pendingConfirm.key);
+  const label=recipientLabel(pendingConfirm.key);
+  $('confirmSentDialog').close();
+  toast(`${label}を確認済みにしました`);
+  const p=(await all()).find(x=>x.id===pendingConfirm.p.id)||pendingConfirm.p;
+  pendingConfirm=null;
+  if($('shareDialog').open)await openShare(p,true);
+};
+$('confirmSentLater').onclick=()=>{
+  $('confirmSentDialog').close();
+  pendingConfirm=null;
+  toast('確認待ちとして残しました');
+};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(showPendingConfirm,500)});
+window.addEventListener('focus',()=>setTimeout(showPendingConfirm,500));
 $('closeShare').onclick=()=>{$('shareDialog').close();screen('home')};$('finishShareBtn').onclick=()=>{$('shareDialog').close();screen('home');toast('打合せ記録を保存しました')};
 async function load(p){state.id=p.id;state.createdAt=p.createdAt;state.base=p.baseImage||p.image||null;state.members=p.members||{};state.sendHistory=p.sendHistory||{};$('projectName').value=p.propertyName||'';$('area').value=p.workArea||'家全体';$('date').value=p.date||$('date').value;$('staff').value=p.staff||'';$('note').value=p.note||'';syncName();if(p.image){await drawUrl(p.image);$('empty').classList.add('hidden');state.history=[p.image];$('undoBtn').disabled=$('clearBtn').disabled=false}else{$('empty').classList.remove('hidden')}screen('work')}
 async function render(){const q=$('search').value.toLowerCase(),ps=(await all()).filter(p=>(p.propertyName+' '+p.note+' '+p.workArea).toLowerCase().includes(q));$('projectList').innerHTML=ps.length?'':'<div class="project-item"><h3>まだ保存された物件はありません</h3><p>ホームから「新しい物件」を始めてください。</p></div>';ps.forEach(p=>{const d=document.createElement('article');d.className='project-item';d.innerHTML=`<h3>${esc(p.propertyName)}</h3><div class="meta">${esc(p.date||'')} ・ ${esc(p.workArea||'')}</div><p>${esc((p.note||'写真の記録').slice(0,120))}</p><div class="actions"><button class="open">開く</button><button class="share">送る</button><button class="delete">削除</button></div>`;d.querySelector('.open').onclick=()=>load(p);d.querySelector('.share').onclick=()=>openShare(p);d.querySelector('.delete').onclick=async()=>{if(confirm('この物件の記録を削除しますか？')){await del(p.id);render();refreshHome()}};$('projectList').appendChild(d)})}
