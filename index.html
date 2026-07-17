@@ -1,279 +1,73 @@
-<!doctype html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#111315">
-  <title>Reform Hub v6｜FIELD MODE</title>
-  <meta name="description" content="住宅リフォームの打合せを写真・手書き・メモで記録し、お客様・業者・社員・自分へ一人ずつ確実に共有する現場カルテ">
-  <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=803">
-  <style>
-    /* v8.0.3: 白背景の文字を確実に黒へ */
-    #voiceBtn{
-      color:#222222 !important;
-      font-weight:700 !important;
-    }
-    .simple-details > summary{
-      color:#222222 !important;
-      font-weight:700 !important;
-    }
-  </style>
-</head>
-<body>
+CAINZ365
+FIELD MODE
+Reform Hub
+現場カルテ
 
-<div id="brandSplash" class="brand-splash" aria-hidden="true">
-  <div class="splash-grid"></div>
-  <div class="splash-version">v7.2</div>
-  <div class="splash-system">PROJECT RECORD SYSTEM</div>
-  <div class="splash-center">
-    <img src="cainz365-logo.png" alt="CAINZ365 Reform & Renovation" class="splash-logo">
-    <div class="splash-field">FIELD MODE</div>
-    <div class="splash-tagline">撮る。描く。伝わる。</div>
-    <div class="splash-line"><span></span></div>
-  </div>
-</div>
+01ホーム 02現場一覧 03新しい現場 04写真記録
+FIELD RECORD TOOL
+撮る。
+描く。
+伝わる。
 
-<header class="app-sidebar field-sidebar">
-  <div class="brand field-brand">
-    <span class="field-brand-mark logo-mark"><img src="cainz365-logo.png" alt="CAINZ365"></span>
-    <div><span>FIELD MODE</span><h1>Reform Hub</h1><p>現場カルテ</p></div>
-  </div>
+ホーム画面に追加
+CAINZ365
+FIELD MODEReform Hub
 
-  <nav class="side-nav" aria-label="メインメニュー">
-    <button class="nav-item active" data-go="home"><b>01</b><span>ホーム</span></button>
-    <button class="nav-item" id="sideProjectsBtn"><b>02</b><span>現場一覧</span></button>
-    <button class="nav-item" id="sideNewBtn" data-action="new-project"><b>03</b><span>新しい現場</span></button>
-    <button class="nav-item" data-go="projects"><b>04</b><span>写真記録</span></button>
-  </nav>
+現場カルテ
+撮る。
+描く。
+伝わる。
+現場写真にその場で書き込み、最大5枚をひとつの記録として共有するアプリです。
 
-  <div class="sidebar-note field-note">
-    <small>FIELD RECORD TOOL</small>
-    <p>撮る。<br>描く。<br><em>伝わる。</em></p>
-  </div>
-  <button id="installBtn" class="install-link">ホーム画面に追加</button>
-</header>
+＋ 新しい現場を始めるまずは写真を撮影
+01📷
+撮る
+現場写真を最大5枚
 
-<main>
-  <section id="home" class="screen active field-home">
-  <div class="field-mobile-head">
-    <div class="mobile-brand-lockup"><img src="cainz365-logo.png" alt="CAINZ365"><div><span>FIELD MODE</span><b>Reform Hub</b></div></div>
-    <button class="mobile-menu" aria-label="メニュー"><span></span><span></span><span></span></button>
-  </div>
+02✏️
+描く
+写真へ直接メモ
 
-  <div class="field-hero">
-    <div class="field-grid"></div>
-    <div class="field-hero-inner">
-      <span class="field-kicker">現場カルテ</span><span id="today" class="field-today-date"></span>
-      <h2>撮る。<br>描く。<br><em>伝わる。</em></h2>
-      <p>現場写真にその場で書き込み、最大5枚をひとつの記録として共有するアプリです。</p>
-      <button id="newProjectBtn" class="field-start" data-action="new-project">
-        <span class="field-plus">＋</span>
-        <span><strong>新しい現場を始める</strong><small>まずは写真を撮影</small></span>
-      </button><div id="homeActionStatus" class="home-action-status" role="status"></div>
-    </div>
-  </div>
+03↗
+共有
+LINE・ANDPAD・Teams
 
-  <div class="field-flow">
-    <article><span>01</span><b>📷</b><h3>撮る</h3><p>現場写真を最大5枚</p></article>
-    <article><span>02</span><b>✏️</b><h3>描く</h3><p>写真へ直接メモ</p></article>
-    <article><span>03</span><b>↗</b><h3>共有</h3><p>LINE・ANDPAD・Teams</p></article>
-  </div>
+TODAY
+今日の現場
+すべて見る →
+進行中の現場
 
-  <section class="field-today">
-    <div class="field-section-head">
-      <div><span>TODAY</span><h3>今日の現場</h3></div>
-      <button id="listBtn" class="field-link">すべて見る →</button>
-    </div>
+続きから開く
+HOW TO USE 迷ったら、上のオレンジボタンから開始 写真を撮るだけで現場カルテ作成が始まります
+PROJECT RECORD 写真を撮る → 描く → 共有する
+‹ 戻る
+現在の物件
+新しい現場カルテ
+共有先
+1 撮る2 描く3 共有
+選択されていません 現場写真を撮る・追加1物件・1日につき最大5枚
+今日の写真0 / 5
+写真ごとに手書きと短いメモを残せます
+見るモード
+0 / 5
+✎ 写真に書く
+まず写真を撮ってください写真なしでメモだけ残すこともできます
+書き込み中
+色 
+ 太さ 
+  指で書く（通常はOFF） ↶ 1つ戻す 線を消す ✓ 書き込み終了
+この写真のひとこと 
+例：キッチン全景、寸法確認、傷み箇所
+ 今回、全員で確認したこと
+例：キッチンの吊戸棚は撤去。壁は白で補修。コンセント位置は業者が確認。
+🎤 音声でメモを書く
+物件名・日付などを確認する
+✓
+記録を完了して共有この端末に保存して、一人ずつ確認して送ります
+入力内容は自動で途中保存されます
 
-    <div id="currentWrap" class="current-card hidden">
-      <p>進行中の現場</p>
-      <h3 id="currentName"></h3>
-      <small id="currentUpdated"></small>
-      <button id="continueBtn" class="big dark">続きから開く</button>
-    </div>
-
-    <div class="field-empty-guide">
-      <span>HOW TO USE</span>
-      <b>迷ったら、上のオレンジボタンから開始</b>
-      <small>写真を撮るだけで現場カルテ作成が始まります</small>
-    </div>
-  </section>
-</section>
-
-  <section id="work" class="screen field-work">
-    <div class="field-work-banner">
-      <span>PROJECT RECORD</span>
-      <strong>写真を撮る → 描く → 共有する</strong>
-    </div>
-    <div class="screen-head"><button class="back" data-go="home">‹ 戻る</button><div><small>現在の物件</small><h2 id="workName">新しい現場カルテ</h2></div><button id="memberBtn" class="quiet">共有先</button></div>
-
-    <div class="steps"><span class="on">1 撮る</span><span>2 描く</span><span>3 共有</span></div>
-
-    <label class="camera-button">
-      <input id="photoInput" type="file" accept="image/*" capture="environment" multiple>
-      <span class="camera-line"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg></span><strong>現場写真を撮る・追加</strong><small id="photoLimitText">1物件・1日につき最大5枚</small>
-    </label>
-
-    
-    <section class="photo-album" id="photoAlbum">
-      <div class="album-head">
-        <div><span>今日の写真</span><strong id="photoCounter">0 / 5</strong></div>
-        <small>写真ごとに手書きと短いメモを残せます</small>
-      </div>
-      <div id="photoThumbs" class="photo-thumbs"></div>
-    </section>
-
-    <div class="canvas-box" id="canvasBox">
-      <canvas id="canvas" width="1200" height="800"></canvas>
-      <div id="viewBadge" class="mode-badge">見るモード</div><div id="activePhotoBadge" class="photo-first-badge">0 / 5</div>
-      <button id="startDrawBtn" class="draw-start" type="button"><span>✎</span> 写真に書く</button>
-      <div id="empty"><span class="empty-house"><svg viewBox="0 0 48 48"><path d="M7 23 24 9l17 14v16H29V28H19v11H7Z"/></svg></span><strong>まず写真を撮ってください</strong><small>写真なしでメモだけ残すこともできます</small></div>
-    </div>
-
-    <div class="drawbar hidden" id="drawbar">
-      <div class="draw-status"><span class="pulse"></span><strong>書き込み中</strong></div>
-      <label class="tool-color">色 <input id="color" type="color" value="#E85D3F"></label>
-      <label class="tool-width">太さ <input id="width" type="range" min="3" max="28" value="9"></label>
-      <label class="finger-toggle"><input id="fingerDraw" type="checkbox"> 指で書く（通常はOFF）</label>
-      <button id="undoBtn" disabled>↶ 1つ戻す</button>
-      <button id="clearBtn" disabled>線を消す</button>
-      <button id="finishDrawBtn" class="finish-draw" type="button">✓ 書き込み終了</button>
-    </div>
-
-    <label class="photo-caption-box"><span>この写真のひとこと</span>
-      <input id="photoCaption" maxlength="40" placeholder="例：キッチン全景、寸法確認、傷み箇所">
-    </label>
-    <label class="note-box"><span>今回、全員で確認したこと</span><textarea id="note" rows="6" placeholder="例：キッチンの吊戸棚は撤去。壁は白で補修。コンセント位置は業者が確認。"></textarea><button id="voiceBtn" type="button">話して入力</button></label>
-
-    <details class="simple-details">
-      <summary>物件名・日付などを確認する</summary>
-      <div class="fields">
-        <label>物件名<input id="projectName" placeholder="例：熊本市〇〇様邸"></label>
-        <label>工事場所<select id="area"><option>家全体</option><option>キッチン</option><option>浴室</option><option>洗面・トイレ</option><option>LDK・内装</option><option>玄関・窓</option><option>屋根・外壁</option><option>庭・駐車場・外構</option><option>その他</option></select></label>
-        <label>打合せ日<input id="date" type="date"></label>
-        <label>担当者<input id="staff" placeholder="例：澤村"></label>
-      </div>
-    </details>
-
-    <button id="finishBtn" class="finish"><span>✓</span><div><strong>記録を完了して共有</strong><small>この端末に保存して、一人ずつ確認して送ります</small></div></button>
-    <p id="autosave" class="autosave">入力内容は自動で途中保存されます</p>
-  </section>
-
-  <section id="projects" class="screen">
-    <div class="screen-head"><button class="back" data-go="home">‹ 戻る</button><div><small>この端末に保存</small><h2>これまでの物件</h2></div><span></span></div>
-    <input id="search" class="search" type="search" placeholder="🔍 物件名・メモで検索">
-    <div id="projectList" class="project-list"></div>
-    <details class="backup"><summary>端末交換に備える</summary><button id="exportBtn">バックアップを保存</button><label>バックアップを読み込む<input id="importInput" type="file" accept="application/json,.json"></label></details>
-  </section>
-</main>
-
-<dialog id="newDialog"><form method="dialog" class="dialog-card"><button class="x" value="cancel">×</button><h2>新しい現場カルテ</h2><p>最初は物件名だけで大丈夫です。</p><label>物件名<input id="newName" autofocus placeholder="例：熊本市〇〇様邸"></label><button id="createBtn" type="button" class="big primary">この物件を始める</button></form></dialog>
-
-<dialog id="memberDialog">
-  <form method="dialog" class="dialog-card large">
-    <button class="x" value="cancel">×</button>
-    <h2>この物件の共有先</h2>
-    <p>送る手段は役割ごとに固定しました。名前だけ登録すれば使えます。</p>
-
-    <div class="fixed-route-summary">
-      <div><span class="route-icon line">L</span><b>お客様</b><em>LINE</em></div>
-      <div><span class="route-icon andpad">A</span><b>協力業者</b><em>ANDPADチャット</em></div>
-      <div><span class="route-icon teams">T</span><b>社内</b><em>Teams</em></div>
-    </div>
-
-    <div class="member-list fixed-members">
-      <fieldset>
-        <legend>お客様</legend>
-        <input id="customerName" placeholder="お名前">
-        <small>共有時はLINEを選びます</small>
-      </fieldset>
-
-      <fieldset>
-        <legend>協力業者</legend>
-        <input id="vendorName" placeholder="会社名・担当者">
-        <small>共有時はANDPADチャットを選びます</small>
-      </fieldset>
-
-      <fieldset>
-        <legend>社内</legend>
-        <input id="employeeName" placeholder="共有先・担当者名">
-        <small>共有時はTeamsを選びます</small>
-      </fieldset>
-
-      <fieldset>
-        <legend>自分</legend>
-        <input id="selfName" placeholder="自分の名前">
-        <small>控えはTeamsで共有します</small>
-      </fieldset>
-    </div>
-
-    <!-- 既存データとの互換性維持用 -->
-    <div class="compat-fields" aria-hidden="true">
-      <input id="customerEmail"><input id="customerPhone">
-      <input id="vendorEmail"><input id="vendorPhone">
-      <input id="employeeEmail"><input id="selfEmail">
-      <select id="customerMethod"><option value="line">LINE</option></select>
-      <select id="vendorMethod"><option value="andpad">ANDPAD</option></select>
-      <select id="employeeMethod"><option value="teams">Teams</option></select>
-      <select id="selfMethod"><option value="teams">Teams</option></select>
-    </div>
-
-    <button id="saveMembersBtn" class="primary" value="default">共有先を登録</button>
-  </form>
-</dialog>
-
-<dialog id="shareDialog">
-  <div class="dialog-card large share-one">
-    <button id="closeShare" class="x">×</button>
-    <div class="share-heading-mark">
-      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v7h14v-7"/></svg>
-    </div>
-    <h2>相手を選んで共有</h2>
-    <p id="shareProjectName"></p>
-    <div class="share-guide">
-      写真がある場合は自動で添付します。ボタンを押した後、表示された共有画面で指定アプリを選んでください。
-    </div>
-    <div id="recipientButtons" class="recipient-buttons fixed-route-buttons"></div>
-    <button id="finishShareBtn" class="big dark">共有作業を終える</button>
-    <small class="legal">ブラウザの仕様上、指定アプリを自動選択することはできません。選ぶアプリはボタンに大きく表示します。</small>
-  </div>
-</dialog>
-
-
-<dialog id="confirmSentDialog">
-  <div class="dialog-card confirm-sent-card">
-    <div class="confirm-icon">✉️</div>
-    <h2>送信しましたか？</h2>
-    <p id="confirmSentWho">お客様への送信</p>
-    <div class="confirm-actions">
-      <button id="confirmSentYes" class="big primary">✓ はい、送りました</button>
-      <button id="confirmSentLater" class="big light">あとで確認する</button>
-    </div>
-    <small class="legal">メールやLINEの送信結果はアプリから自動確認できないため、最後にチェックします。</small>
-  </div>
-</dialog>
-
-<div id="toast"></div>
-<script src="app.js?v=803"></script>
-
-<script>
-(function(){
-  const splash=document.getElementById('brandSplash');
-  if(!splash) return;
-  document.documentElement.classList.add('splash-active');
-  window.addEventListener('load',()=>{
-    setTimeout(()=>splash.classList.add('is-leaving'),1050);
-    setTimeout(()=>{
-      splash.remove();
-      document.documentElement.classList.remove('splash-active');
-    },1550);
-  });
-})();
-</script>
-
-</body>
-</html>
+‹ 戻る
+この端末に保存
+これまでの物件
+🔍 物件名・メモで検索
+端末交換に備える
