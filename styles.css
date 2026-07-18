@@ -13,3 +13,5 @@
 .history-detail-section h3{margin:0 0 8px;font-size:.95rem}
 .history-text{white-space:pre-wrap;line-height:1.6;color:var(--text)}
 .empty-history{padding:20px;border:1px dashed #555;border-radius:14px;color:var(--muted);text-align:center}
+
+:root{--bg:#F7F8F3;--panel:#fff;--line:#D9E2DC;--text:#2F3A33;--muted:#6F7B74;--orange:#008A5A}body{background:var(--bg)}.panel{background:#fff;border-radius:22px;box-shadow:0 8px 24px rgba(0,0,0,.05)}.primary,.finish-btn{background:#008A5A!important;color:#fff!important}.topbar,footer{background:#fff}input,textarea{background:#fff;color:var(--text)}button{border-radius:18px}.photoAdd{background:#F4F8F5}
