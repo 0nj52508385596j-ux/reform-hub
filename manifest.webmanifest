@@ -1,0 +1,9 @@
+{
+  "name": "CAINZ365 FIELD MODE β",
+  "short_name": "FIELD MODE",
+  "start_url": "./index.html?v=900",
+  "display": "standalone",
+  "background_color": "#0f1011",
+  "theme_color": "#111111",
+  "description": "現場調査のメモ・写真・文章整理アプリ"
+}
