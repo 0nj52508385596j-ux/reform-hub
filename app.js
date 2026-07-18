@@ -122,4 +122,4 @@ $("#shareClose").onclick=()=>$("#shareModal").classList.remove("open");
 $("#selectAllBtn").onclick=()=>$$("[data-share]").forEach(x=>x.checked=true);
 $("#shareNowBtn").onclick=async()=>{const idx=$$("[data-share]:checked").map(x=>+x.dataset.share);if(!idx.length)return toast("送る写真を選んでください");const text=$("#output").value;const files=[];for(const i of idx){const blob=await (await fetch(S.photos[i].data)).blob();files.push(new File([blob],`写真${i+1}_${S.photos[i].tag}.jpg`,{type:"image/jpeg"}))}if(navigator.canShare&&navigator.canShare({files})&&navigator.share){try{await navigator.share({title:S.project||"FIELD MODE",text,files});return}catch(e){}}await navigator.clipboard.writeText(text);toast("文章をコピーしました")};
 $("#pdfBtn").onclick=()=>{if(!$("#output").value)gen("summary");setTimeout(()=>print(),300)};
-load();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js?v=2400").catch(()=>{})})();
+load();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js?v=2600").catch(()=>{})})();

@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#071015">
+<meta name="theme-color" content="#081725">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>CAINZ365 FIELD MODE TACTICAL EDITION</title>
+<title>CAINZ365 FIELD MODE Heritage Navy</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=2400">
+<link rel="stylesheet" href="styles.css?v=2600">
 </head>
 <body>
 <header class="topbar">
   <div>
     <small>CAINZ365</small>
-    <h1>FIELD MODE <b>TACTICAL 01</b></h1>
-    <p>提案漏れ・撮影漏れ — ゼロ化プロトコル</p>
+    <h1>FIELD MODE <b>Heritage Navy</b></h1>
+    <p>提案漏れと撮影漏れを防ぐ</p>
   </div>
   <div class="header-actions">
     <button id="historyBtn">📚 過去の現場</button>
@@ -25,7 +25,7 @@
 
 <main>
 <section class="panel">
-  <h2><span>01</span>現場情報</h2><p class="tech-note">TARGET COORDINATES / DATE</p>
+  <h2><span>01</span>現場情報</h2>
   <div class="grid">
     <label>物件名<input id="project" placeholder="例：熊本市 ○○様邸"></label>
     <label>調査日<input id="date" type="date"></label>
@@ -40,7 +40,7 @@
 </section>
 
 <section class="panel">
-  <h2><span>02</span>現場メモ</h2><p class="tech-note">FIELD OBSERVATION LOG</p>
+  <h2><span>02</span>現場メモ</h2>
   <textarea id="memo" rows="9" placeholder="例：床がぶかぶか。外壁のひび割れあり。雨樋も確認したい。"></textarea>
   <div class="actions">
     <button class="primary" id="voiceBtn">🎤 音声で入力</button>
@@ -50,7 +50,7 @@
 </section>
 
 <section class="panel">
-  <h2><span>03</span>現場写真</h2><p class="tech-note">VISUAL EVIDENCE — MAX 20</p>
+  <h2><span>03</span>現場写真</h2>
   <label class="photoAdd">
     <input id="photoInput" type="file" accept="image/*" capture="environment" multiple>
     <strong>📷 写真を追加</strong>
@@ -60,7 +60,7 @@
 </section>
 
 <section class="panel accent-panel">
-  <h2><span>AI</span>提案漏れチェック</h2><p class="tech-note">ANOMALY DETECTION SEQUENCE</p>
+  <h2><span>AI</span>提案漏れチェック</h2>
   <p class="section-note">メモを読むと、提案候補だけを静かに表示します。</p>
   <div id="proposalBox" class="proposal-box">
     <div class="empty">メモを入力すると提案候補が表示されます。</div>
@@ -68,14 +68,14 @@
 </section>
 
 <section class="panel finish-panel">
-  <h2><span>04</span>現場を終える</h2><p class="tech-note">PRE-WITHDRAWAL VERIFICATION</p>
+  <h2><span>04</span>現場を終える</h2>
   <p class="section-note">帰る前に、写真の撮り忘れだけを確認します。</p>
   <button id="finishBtn" class="finish-btn">🚗 帰る前にAI確認</button>
   <button id="saveCaseBtn" class="save-case-btn">💾 この現場を保存</button>
 </section>
 
 <section class="panel">
-  <h2><span>05</span>共有文</h2><p class="tech-note">TRANSMISSION FORMAT SELECT</p>
+  <h2><span>05</span>共有文</h2>
   <div class="ai-grid">
     <button data-mode="summary">要点整理</button>
     <button data-mode="customer">お客様向け</button>
@@ -144,6 +144,6 @@
   </div>
 </div>
 
-<script src="app.js?v=2400"></script>
+<script src="app.js?v=2600"></script>
 </body>
 </html>
