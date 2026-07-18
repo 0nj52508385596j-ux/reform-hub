@@ -1,9 +1,9 @@
 {
-  "name": "CAINZ365 FIELD MODE v10 β",
+  "name": "CAINZ365 FIELD MODE v1.0",
   "short_name": "FIELD MODE",
-  "start_url": "./index.html?v=1000",
+  "start_url": "./index.html?v=1100",
   "display": "standalone",
   "background_color": "#0f1011",
-  "theme_color": "#111111",
-  "description": "現場写真への手書き、写真タグ、添付漏れチェック付き現場支援アプリ"
+  "theme_color": "#101112",
+  "description": "提案漏れと撮影漏れを防ぐ現場支援アプリ"
 }

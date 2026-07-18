@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#101112">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>CAINZ365 FIELD MODE v10 β</title>
+<title>CAINZ365 FIELD MODE v1.0</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=1000">
+<link rel="stylesheet" href="styles.css?v=1100">
 </head>
 <body>
 <header class="topbar">
   <div>
     <small>CAINZ365</small>
-    <h1>FIELD MODE <b>v10 β</b></h1>
-    <p>撮る・話す・描く・整理・送る</p>
+    <h1>FIELD MODE <b>v1.0</b></h1>
+    <p>提案漏れと撮影漏れを防ぐ</p>
   </div>
   <div class="header-actions">
-    <button id="fontBtn" class="header-btn">文字：大</button>
-    <button id="newBtn" class="header-btn">新規</button>
+    <button id="fontBtn">文字：大</button>
+    <button id="newBtn">新規</button>
   </div>
 </header>
 
@@ -30,7 +30,7 @@
     <label>調査日<input id="date" type="date"></label>
   </div>
   <details>
-    <summary>お客様名・担当者を確認する</summary>
+    <summary>お客様名・担当者</summary>
     <div class="grid details-grid">
       <label>お客様名<input id="customer"></label>
       <label>担当者<input id="staff"></label>
@@ -40,12 +40,12 @@
 
 <section class="panel">
   <h2><span>02</span>現場メモ</h2>
-  <textarea id="memo" rows="9" placeholder="ご要望、寸法、劣化状況、注意点など"></textarea>
+  <textarea id="memo" rows="9" placeholder="例：床がぶかぶか。外壁のひび割れあり。雨樋も確認したい。"></textarea>
   <div class="actions">
-    <button class="primary" id="voiceBtn">🎤 音声でメモを書く</button>
-    <button id="timeBtn">＋ 時刻を追加</button>
+    <button class="primary" id="voiceBtn">🎤 音声で入力</button>
+    <button id="timeBtn">＋ 時刻</button>
   </div>
-  <p class="hint">iPadでは、メモ欄を開いた後にキーボードのマイクを押して話します。</p>
+  <p class="hint">iPadではメモ欄を開き、キーボードのマイクを押して話します。</p>
 </section>
 
 <section class="panel">
@@ -58,15 +58,29 @@
   <div id="photos" class="photos"></div>
 </section>
 
-<section class="panel">
-  <h2><span>04</span>AI整理</h2>
-  <div class="ai-grid">
-    <button data-mode="summary">🤖 要点整理</button>
-    <button data-mode="customer">👤 お客様向け</button>
-    <button data-mode="contractor">👷 業者向け</button>
-    <button data-mode="internal">🏢 社内日報</button>
+<section class="panel accent-panel">
+  <h2><span>AI</span>提案漏れチェック</h2>
+  <p class="section-note">メモを読むと、提案候補だけを静かに表示します。</p>
+  <div id="proposalBox" class="proposal-box">
+    <div class="empty">メモを入力すると提案候補が表示されます。</div>
   </div>
-  <textarea id="output" rows="11" placeholder="用途別の文章がここに表示されます"></textarea>
+</section>
+
+<section class="panel finish-panel">
+  <h2><span>04</span>現場を終える</h2>
+  <p class="section-note">帰る前に、写真の撮り忘れだけを確認します。</p>
+  <button id="finishBtn" class="finish-btn">🚗 帰る前にAI確認</button>
+</section>
+
+<section class="panel">
+  <h2><span>05</span>共有文</h2>
+  <div class="ai-grid">
+    <button data-mode="summary">要点整理</button>
+    <button data-mode="customer">お客様向け</button>
+    <button data-mode="contractor">業者向け</button>
+    <button data-mode="internal">社内日報</button>
+  </div>
+  <textarea id="output" rows="10" placeholder="共有文がここに表示されます"></textarea>
   <div class="actions">
     <button id="copyBtn">コピー</button>
     <button class="primary" id="shareOpenBtn">📤 写真を選んで共有</button>
@@ -75,48 +89,43 @@
 </section>
 </main>
 
-<footer><span id="status">自動保存中</span><span>FIELD MODE v10 β</span></footer>
-
+<footer><span id="status">自動保存中</span><span>FIELD MODE v1.0</span></footer>
 <div id="toast" class="toast"></div>
 
-<div id="drawModal" class="modal" aria-hidden="true">
+<div id="drawModal" class="modal">
   <div class="modal-card">
-    <div class="modal-head">
-      <strong>写真に描く</strong>
-      <button id="drawClose">閉じる</button>
-    </div>
+    <div class="modal-head"><strong>写真に描く</strong><button id="drawClose">閉じる</button></div>
     <div class="tool-row">
       <button data-color="#ff3b30" class="color-tool active">赤</button>
       <button data-color="#007aff" class="color-tool">青</button>
       <button data-color="#ffd60a" class="color-tool">黄</button>
-      <button id="thinBtn">細</button>
-      <button id="thickBtn">太</button>
-      <button id="undoBtn">↩ 戻す</button>
+      <button id="thinBtn">細</button><button id="thickBtn">太</button><button id="undoBtn">↩ 戻す</button>
     </div>
     <canvas id="drawCanvas"></canvas>
-    <div class="actions">
-      <button id="resetDraw">元画像に戻す</button>
-      <button class="primary" id="saveDraw">💾 保存</button>
+    <div class="actions"><button id="resetDraw">元画像</button><button class="primary" id="saveDraw">💾 保存</button></div>
+  </div>
+</div>
+
+<div id="finishModal" class="modal">
+  <div class="modal-card compact">
+    <div class="modal-head"><strong>帰る前のAI確認</strong><button id="finishClose">閉じる</button></div>
+    <div id="finishResult"></div>
+    <div class="finish-actions">
+      <button id="backCameraBtn" class="primary">📷 撮影に戻る</button>
+      <button id="leaveAnywayBtn">このまま終了</button>
     </div>
   </div>
 </div>
 
-<div id="shareModal" class="modal" aria-hidden="true">
-  <div class="modal-card">
-    <div class="modal-head">
-      <strong>送る写真を確認</strong>
-      <button id="shareClose">閉じる</button>
-    </div>
-    <p class="share-lead">送る写真だけチェックしてください。本文との添付漏れも確認します。</p>
+<div id="shareModal" class="modal">
+  <div class="modal-card compact">
+    <div class="modal-head"><strong>送る写真を確認</strong><button id="shareClose">閉じる</button></div>
     <div id="shareWarnings" class="warnings"></div>
     <div id="shareList" class="share-list"></div>
-    <div class="actions">
-      <button id="selectAllBtn">すべて選択</button>
-      <button class="primary" id="shareNowBtn">📤 選んだ写真と文章を共有</button>
-    </div>
+    <div class="actions"><button id="selectAllBtn">すべて選択</button><button class="primary" id="shareNowBtn">📤 共有</button></div>
   </div>
 </div>
 
-<script src="app.js?v=1000"></script>
+<script src="app.js?v=1100"></script>
 </body>
 </html>
