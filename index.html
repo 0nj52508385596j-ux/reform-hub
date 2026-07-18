@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#101112">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>CAINZ365 FIELD MODE v1.0</title>
+<title>CAINZ365 FIELD MODE v1.1</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=1100">
+<link rel="stylesheet" href="styles.css?v=1200">
 </head>
 <body>
 <header class="topbar">
   <div>
     <small>CAINZ365</small>
-    <h1>FIELD MODE <b>v1.0</b></h1>
+    <h1>FIELD MODE <b>v1.1</b></h1>
     <p>提案漏れと撮影漏れを防ぐ</p>
   </div>
   <div class="header-actions">
+    <button id="historyBtn">📚 過去の現場</button>
     <button id="fontBtn">文字：大</button>
     <button id="newBtn">新規</button>
   </div>
@@ -70,6 +71,7 @@
   <h2><span>04</span>現場を終える</h2>
   <p class="section-note">帰る前に、写真の撮り忘れだけを確認します。</p>
   <button id="finishBtn" class="finish-btn">🚗 帰る前にAI確認</button>
+  <button id="saveCaseBtn" class="save-case-btn">💾 この現場を保存</button>
 </section>
 
 <section class="panel">
@@ -89,7 +91,7 @@
 </section>
 </main>
 
-<footer><span id="status">自動保存中</span><span>FIELD MODE v1.0</span></footer>
+<footer><span id="status">自動保存中</span><span>FIELD MODE v1.1</span></footer>
 <div id="toast" class="toast"></div>
 
 <div id="drawModal" class="modal">
@@ -126,6 +128,22 @@
   </div>
 </div>
 
-<script src="app.js?v=1100"></script>
+
+<div id="historyModal" class="modal">
+  <div class="modal-card compact">
+    <div class="modal-head"><strong>過去の現場</strong><button id="historyClose">閉じる</button></div>
+    <input id="historySearch" class="history-search" placeholder="物件名・お客様名・内容で検索">
+    <div id="historyList" class="history-list"></div>
+  </div>
+</div>
+
+<div id="historyDetailModal" class="modal">
+  <div class="modal-card compact">
+    <div class="modal-head"><strong id="historyDetailTitle">保存内容</strong><button id="historyDetailClose">閉じる</button></div>
+    <div id="historyDetailBody"></div>
+  </div>
+</div>
+
+<script src="app.js?v=1200"></script>
 </body>
 </html>

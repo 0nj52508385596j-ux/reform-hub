@@ -1,4 +1,4 @@
-(()=>{const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],K="field-mode-v1";let S={project:"",date:"",customer:"",staff:"",memo:"",output:"",photos:[],font:"large"};let drawIndex=-1,drawColor="#ff3b30",drawWidth=9,drawing=false,history=[];const ids=["project","date","customer","staff","memo","output"];
+(()=>{const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],K="field-mode-v1",HK="field-mode-history-v1";let S={project:"",date:"",customer:"",staff:"",memo:"",output:"",photos:[],font:"large"};let drawIndex=-1,drawColor="#ff3b30",drawWidth=9,drawing=false,history=[];const ids=["project","date","customer","staff","memo","output"];
 const RULES=[
  {tag:"床",words:["床","フローリング","ぶかぶか","沈む","きしみ"],suggest:["床張替え","床下点検","シロアリ点検","断熱改修"]},
  {tag:"外壁",words:["外壁","ひび割れ","クラック","チョーキング","色あせ"],suggest:["外壁塗装","シーリング","下地補修","雨樋点検"]},
@@ -12,6 +12,63 @@ const RULES=[
  {tag:"その他",words:["カーポート","駐車場","土間"],suggest:["カーポート交換","土間コンクリート","排水計画","フェンス提案"]}
 ];
 function toast(m){const e=$("#toast");e.textContent=m;e.classList.add("show");clearTimeout(e.t);e.t=setTimeout(()=>e.classList.remove("show"),2500)}
+
+function getHistory(){try{return JSON.parse(localStorage.getItem(HK)||"[]")}catch(e){return[]}}
+function setHistory(items){localStorage.setItem(HK,JSON.stringify(items))}
+function currentSuggestions(){return [...new Set(matches().flatMap(x=>x.suggest))].slice(0,8)}
+function makeCaseRecord(){
+  ids.forEach(id=>S[id]=$("#"+id).value);
+  return {
+    id: Date.now(),
+    savedAt: new Date().toISOString(),
+    project:S.project||"物件名未入力",
+    date:S.date||"",
+    customer:S.customer||"",
+    staff:S.staff||"",
+    memo:S.memo||"",
+    output:S.output||"",
+    photoCount:S.photos.length,
+    photoTags:[...new Set(S.photos.map(p=>p.tag).filter(t=>t&&t!=="未設定"))],
+    suggestions:currentSuggestions()
+  }
+}
+function saveCurrentCase(){
+  const rec=makeCaseRecord();
+  const items=getHistory();
+  items.unshift(rec);
+  setHistory(items.slice(0,100));
+  toast("過去の現場に保存しました");
+}
+function renderHistory(filter=""){
+  const list=$("#historyList");
+  const q=filter.trim().toLowerCase();
+  const items=getHistory().filter(x=>[x.project,x.customer,x.memo,x.output,(x.suggestions||[]).join(" "),(x.photoTags||[]).join(" ")].join(" ").toLowerCase().includes(q));
+  if(!items.length){list.innerHTML='<div class="empty-history">保存された現場がありません。</div>';return}
+  list.innerHTML=items.map(x=>`
+    <div class="history-item" data-history-id="${x.id}">
+      <h3>${esc(x.project)}</h3>
+      <div class="history-meta">${esc(x.date||"日付未設定")}　写真${x.photoCount||0}枚${x.customer?`　${esc(x.customer)}`:""}</div>
+      <div class="history-tags">${[...(x.photoTags||[]),...(x.suggestions||[]).slice(0,3)].map(t=>`<span class="history-tag">${esc(t)}</span>`).join("")}</div>
+    </div>`).join("");
+  $$("[data-history-id]").forEach(el=>el.onclick=()=>openHistoryDetail(+el.dataset.historyId))
+}
+function openHistoryDetail(id){
+  const x=getHistory().find(v=>v.id===id); if(!x)return;
+  $("#historyDetailTitle").textContent=x.project;
+  $("#historyDetailBody").innerHTML=`
+    <div class="history-detail-section"><h3>基本情報</h3><div class="history-text">${esc(x.date||"日付未設定")}${x.customer?`\n${esc(x.customer)}`:""}${x.staff?`\n担当：${esc(x.staff)}`:""}</div></div>
+    <div class="history-detail-section"><h3>写真</h3><div class="history-text">${x.photoCount||0}枚${(x.photoTags||[]).length?`\nタグ：${esc((x.photoTags||[]).join("・"))}`:""}</div></div>
+    <div class="history-detail-section"><h3>提案候補</h3><div class="history-text">${esc((x.suggestions||[]).map(v=>"・"+v).join("\n")||"なし")}</div></div>
+    <div class="history-detail-section"><h3>現場メモ</h3><div class="history-text">${esc(x.memo||"なし")}</div></div>
+    <div class="history-detail-section"><h3>保存文</h3><div class="history-text">${esc(x.output||"保存文なし")}</div></div>
+    <div class="history-actions">
+      <button id="historyCopyBtn">保存文をコピー</button>
+      <button id="historyDeleteBtn" class="delete">削除</button>
+    </div>`;
+  $("#historyDetailModal").classList.add("open");
+  $("#historyCopyBtn").onclick=async()=>{const t=x.output||x.memo||"";if(!t)return toast("コピーする文章がありません");try{await navigator.clipboard.writeText(t);toast("コピーしました")}catch(e){toast("コピーできませんでした")}};
+  $("#historyDeleteBtn").onclick=()=>{if(confirm("この保存履歴を削除しますか？")){setHistory(getHistory().filter(v=>v.id!==id));$("#historyDetailModal").classList.remove("open");renderHistory($("#historySearch").value);toast("削除しました")}}
+}
 function load(){try{S={...S,...JSON.parse(localStorage.getItem(K)||"{}")}}catch(e){}if(!S.date)S.date=new Date().toISOString().slice(0,10);ids.forEach(id=>$("#"+id).value=S[id]||"");applyFont();renderPhotos();analyze()}
 let timer;function later(){clearTimeout(timer);$("#status").textContent="保存中…";timer=setTimeout(save,280);analyze()}
 function save(){ids.forEach(id=>S[id]=$("#"+id).value);try{localStorage.setItem(K,JSON.stringify(S));$("#status").textContent="端末に保存済み"}catch(e){$("#status").textContent="容量不足";toast("写真を減らしてください")}}
@@ -21,6 +78,11 @@ $("#fontBtn").onclick=()=>{S.font=S.font==="normal"?"large":S.font==="large"?"xl
 $("#voiceBtn").onclick=()=>{const m=$("#memo");m.focus();m.setSelectionRange(m.value.length,m.value.length);toast("キーボードのマイクを押して話してください")};
 $("#timeBtn").onclick=()=>{const d=new Date(),m=$("#memo");m.value+=`\n[${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}] `;m.focus();later()};
 $("#newBtn").onclick=()=>{if(confirm("現在の内容を消して新しい現場を始めますか？")){localStorage.removeItem(K);location.reload()}};
+$("#saveCaseBtn").onclick=saveCurrentCase;
+$("#historyBtn").onclick=()=>{renderHistory();$("#historyModal").classList.add("open")};
+$("#historyClose").onclick=()=>$("#historyModal").classList.remove("open");
+$("#historyDetailClose").onclick=()=>$("#historyDetailModal").classList.remove("open");
+$("#historySearch").oninput=e=>renderHistory(e.target.value);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function fileToData(f){return new Promise((ok,no)=>{const r=new FileReader;r.onload=()=>{const i=new Image;i.onload=()=>{const q=Math.min(1,1600/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=Math.round(i.width*q);c.height=Math.round(i.height*q);c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.78))};i.onerror=no;i.src=r.result};r.onerror=no;r.readAsDataURL(f)})}
 $("#photoInput").onchange=async e=>{const fs=[...e.target.files];if(S.photos.length+fs.length>20)return toast("写真は最大20枚です");for(const f of fs)try{S.photos.push({data:await fileToData(f),comment:"",tag:"未設定"})}catch(x){}e.target.value="";renderPhotos();save();analyze()};
@@ -35,7 +97,7 @@ function analyze(){const box=$("#proposalBox"),m=matches();if(!m.length){box.inn
 function missingTags(){const have=new Set(S.photos.map(p=>p.tag));return [...new Set(matches().map(r=>r.tag).filter(t=>t!=="その他"&&!have.has(t)))]}
 $("#finishBtn").onclick=()=>{const miss=missingTags(),m=matches(),r=$("#finishResult");let h="";if(miss.length)h+=miss.map(t=>`<div class="finish-warning">⚠ ${t}の写真がありません。このまま帰りますか？</div>`).join("");else h+='<div class="finish-ok">✓ メモに出てきた部位の写真はそろっています。</div>';if(m.length){const all=[...new Set(m.flatMap(x=>x.suggest))].slice(0,8);h+=`<div class="proposal-final"><strong>提案候補</strong><br>${all.map(x=>"・"+x).join("<br>")}</div>`}r.innerHTML=h;$("#finishModal").classList.add("open")};
 $("#finishClose").onclick=()=>$("#finishModal").classList.remove("open");
-$("#leaveAnywayBtn").onclick=()=>{$("#finishModal").classList.remove("open");toast("現場確認を終了しました")};
+$("#leaveAnywayBtn").onclick=()=>{saveCurrentCase();$("#finishModal").classList.remove("open");toast("現場を保存して終了しました")};
 $("#backCameraBtn").onclick=()=>{$("#finishModal").classList.remove("open");$("#photoInput").click()};
 function openDraw(i){drawIndex=i;const c=$("#drawCanvas"),ctx=c.getContext("2d"),img=new Image;img.onload=()=>{c.width=img.width;c.height=img.height;ctx.drawImage(img,0,0);history=[c.toDataURL()];$("#drawModal").classList.add("open")};img.src=S.photos[i].data}
 function point(e){const c=$("#drawCanvas"),r=c.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return{x:(p.clientX-r.left)*c.width/r.width,y:(p.clientY-r.top)*c.height/r.height}}
@@ -60,4 +122,4 @@ $("#shareClose").onclick=()=>$("#shareModal").classList.remove("open");
 $("#selectAllBtn").onclick=()=>$$("[data-share]").forEach(x=>x.checked=true);
 $("#shareNowBtn").onclick=async()=>{const idx=$$("[data-share]:checked").map(x=>+x.dataset.share);if(!idx.length)return toast("送る写真を選んでください");const text=$("#output").value;const files=[];for(const i of idx){const blob=await (await fetch(S.photos[i].data)).blob();files.push(new File([blob],`写真${i+1}_${S.photos[i].tag}.jpg`,{type:"image/jpeg"}))}if(navigator.canShare&&navigator.canShare({files})&&navigator.share){try{await navigator.share({title:S.project||"FIELD MODE",text,files});return}catch(e){}}await navigator.clipboard.writeText(text);toast("文章をコピーしました")};
 $("#pdfBtn").onclick=()=>{if(!$("#output").value)gen("summary");setTimeout(()=>print(),300)};
-load();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js?v=1100").catch(()=>{})})();
+load();if("serviceWorker"in navigator)navigator.serviceWorker.register("./sw.js?v=1200").catch(()=>{})})();
