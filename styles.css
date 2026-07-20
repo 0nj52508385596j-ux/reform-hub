@@ -132,3 +132,10 @@ footer{position:fixed;left:0;right:0;bottom:0;z-index:8;display:flex;justify-con
   h1{font-size:1.18rem}h1 b{margin-left:2px}.finish-btn{min-height:76px}
 }
 @media print{header,footer,.actions,.photoAdd,.ai-grid,.hint,.finish-panel,.accent-panel{display:none!important}body{background:white;color:black}main{padding:0}.panel{background:white;color:black;border:1px solid #aaa;box-shadow:none}input,textarea{background:white;color:black;border:0}.photos{grid-template-columns:1fr 1fr}}
+
+/* v2.1 現場アルバム */
+.storage-summary{margin:-2px 0 14px;padding:11px 13px;border-radius:12px;background:#f9fafb;border:1px solid var(--line);color:var(--muted);font-size:.72rem;font-weight:800}
+.history-photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.history-photo-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#f2f4f7}
+.history-actions.three{grid-template-columns:1.25fr 1fr .75fr}
+@media(max-width:650px){.history-photo-grid{grid-template-columns:repeat(2,1fr)}.history-actions.three{grid-template-columns:1fr}}
